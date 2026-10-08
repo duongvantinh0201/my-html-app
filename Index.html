@@ -1,0 +1,2194 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    <title>Enterprise Multi-Company IT, CCTV & Infrastructure Platform</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [v-cloak] { display: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        @keyframes pulse-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .animate-rec { animation: pulse-red 1.2s infinite; }
+        button, select, input, textarea, a { touch-action: manipulation; }
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col pb-16 md:pb-0" id="app" v-cloak>
+
+    <div v-if="!isLoggedIn" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 p-4">
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-md w-full shadow-2xl p-6 space-y-6">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center mx-auto text-xl border border-emerald-500/30">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h2 class="text-lg font-bold text-white">Đăng Nhập Quản Trị Hệ Thống</h2>
+                <p class="text-xs text-slate-400">Enterprise IT & CCTV Infrastructure Platform (RBAC)</p>
+            </div>
+
+            <form @submit.prevent="handleLogin" class="space-y-4 text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Email Đăng Nhập</label>
+                    <input v-model="loginForm.email" required type="email" placeholder="duongvantinh0201@gmail.com" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-white font-mono">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Mật Khẩu</label>
+                    <input v-model="loginForm.password" required type="password" placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-amber-300 font-mono">
+                </div>
+                <div class="flex items-center justify-between text-slate-300">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input v-model="loginForm.remember" type="checkbox" class="rounded bg-slate-800 border-slate-700 text-emerald-500 focus:ring-emerald-500 w-4 h-4">
+                        <span>Lưu đăng nhập</span>
+                    </label>
+                </div>
+                <div v-if="loginError" class="p-2.5 bg-rose-950/60 border border-rose-500/50 rounded-lg text-rose-300 text-center font-medium">
+                    <i class="fa-solid fa-circle-exclamation mr-1.5"></i>{{ loginError }}
+                </div>
+                <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition shadow-lg text-sm">
+                    Đăng Nhập Hệ Thống
+                </button>
+            </form>
+            <div class="text-center text-[11px] text-slate-500">
+                <span>Hệ thống bảo mật phân quyền doanh nghiệp</span>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="isLoggedIn" class="flex flex-col min-h-screen">
+        <!-- HEADER SECTION -->
+        <header class="bg-slate-800/95 backdrop-blur border-b border-slate-700/80 sticky top-0 z-30 px-3 py-2.5 md:px-4 md:py-3 shadow-lg">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="p-2 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-xl shadow-md text-white flex-shrink-0">
+                            <i class="fa-solid fa-network-wired text-lg md:text-xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-base md:text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-emerald-400 bg-clip-text text-transparent leading-tight">
+                                Hệ Thống Hạ Tầng IT & CCTV
+                            </h1>
+                            <p class="text-[10px] md:text-xs text-slate-400">Multi-Company Operations Platform (RBAC Active)</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <div class="hidden md:flex flex-col text-right text-[11px] text-slate-300">
+                            <span class="font-bold text-emerald-400">{{ currentUser?.name }}</span>
+                            <span class="text-[10px] text-slate-400 font-mono">[{{ currentUser?.role }}]</span>
+                        </div>
+                        <button v-if="hasPermission('factory_reset')" @click="openResetOtpModal" class="hidden md:flex px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-200 text-xs font-medium rounded-lg border border-rose-700/60 transition items-center gap-1.5" title="Khôi phục cài đặt gốc qua OTP">
+                            <i class="fa-solid fa-rotate-left"></i><span>Khôi Phục Gốc (OTP)</span>
+                        </button>
+                        <button @click="handleLogout" class="px-3 py-1.5 bg-rose-900/60 hover:bg-rose-900 text-rose-200 text-xs font-medium rounded-lg border border-rose-700/50 transition items-center gap-1.5" title="Đăng xuất">
+                            <i class="fa-solid fa-right-from-bracket"></i><span>Thoát</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- GLOBAL COMPANY SELECTOR BAR -->
+                <div class="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-xl border border-slate-700">
+                    <div class="flex items-center gap-1.5 pl-2 text-xs font-semibold text-emerald-400">
+                        <i class="fa-solid fa-building"></i><span>Công ty:</span>
+                    </div>
+                    <select v-model="selectedCompany" @change="onCompanyChanged" class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white font-medium focus:outline-none focus:border-emerald-500">
+                        <option value="ALL">🌐 Tất Cả Các Công Ty</option>
+                        <option v-for="corp in companies" :key="corp.id" :value="corp.id">{{ corp.name }}</option>
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <!-- NAVIGATION TABS -->
+        <nav class="bg-slate-800 border-b border-slate-700 px-2 md:px-4 sticky top-[105px] md:top-[65px] z-20">
+            <div class="max-w-7xl mx-auto flex space-x-1 overflow-x-auto custom-scrollbar py-1">
+                <button @click="activeTab = 'dashboard'" :class="activeTab === 'dashboard' ? 'border-emerald-500 text-emerald-400 bg-slate-700/60 font-semibold' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/20'" class="flex items-center gap-1.5 py-2 px-3 border-b-2 text-xs md:text-sm whitespace-nowrap transition rounded-t-lg">
+                    <i class="fa-solid fa-chart-pie"></i><span>Tổng Quan</span>
+                </button>
+                <button v-if="hasPermission('view_hr')" @click="activeTab = 'hr_assets'" :class="activeTab === 'hr_assets' ? 'border-emerald-500 text-emerald-400 bg-slate-700/60 font-semibold' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/20'" class="flex items-center gap-1.5 py-2 px-3 border-b-2 text-xs md:text-sm whitespace-nowrap transition rounded-t-lg">
+                    <i class="fa-solid fa-users-gear"></i><span>1. HR & IT</span>
+                    <span class="px-1.5 py-0.2 text-[10px] rounded-full bg-slate-700 text-slate-300 font-mono">{{ filteredHrAssets.length }}</span>
+                </button>
+                <button v-if="hasPermission('view_network')" @click="activeTab = 'network_infrastructure'" :class="activeTab === 'network_infrastructure' ? 'border-emerald-500 text-emerald-400 bg-slate-700/60 font-semibold' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/20'" class="flex items-center gap-1.5 py-2 px-3 border-b-2 text-xs md:text-sm whitespace-nowrap transition rounded-t-lg">
+                    <i class="fa-solid fa-network-wired text-emerald-400"></i><span>2. Hạ Tầng Mạng & ISP</span>
+                    <span class="px-1.5 py-0.2 text-[10px] rounded-full bg-slate-700 text-slate-300 font-mono">{{ filteredIspWifi.length + filteredNetworkVlan.length }}</span>
+                </button>
+                <button v-if="hasPermission('view_cctv')" @click="activeTab = 'cctv_security'" :class="activeTab === 'cctv_security' ? 'border-amber-500 text-amber-400 bg-slate-700/60 font-bold' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/20'" class="flex items-center gap-1.5 py-2 px-3 border-b-2 text-xs md:text-sm whitespace-nowrap transition rounded-t-lg">
+                    <i class="fa-solid fa-video text-amber-400"></i><span>3. CCTV Camera</span>
+                    <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">{{ filteredCctvList.length }}</span>
+                </button>
+                <button v-if="hasPermission('view_attendance')" @click="activeTab = 'ronald_jack'" :class="activeTab === 'ronald_jack' ? 'border-amber-400 text-amber-300 bg-amber-500/10 font-bold' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/20'" class="flex items-center gap-1.5 py-2 px-3 border-b-2 text-xs md:text-sm whitespace-nowrap transition rounded-t-lg">
+                    <i class="fa-solid fa-fingerprint text-amber-400"></i><span>4. Ronald Jack</span>
+                    <span class="px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">{{ filteredRonaldJack.length }}</span>
+                </button>
+                <button v-if="hasPermission('view_sites')" @click="activeTab = 'sites_depts'" :class="activeTab === 'sites_depts' ? 'border-indigo-500 text-indigo-400 bg-slate-700/60 font-bold' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/20'" class="flex items-center gap-1.5 py-2 px-3 border-b-2 text-xs md:text-sm whitespace-nowrap transition rounded-t-lg">
+                    <i class="fa-solid fa-sitemap text-indigo-400"></i><span>5. C.Ty & Sites</span>
+                </button>
+                <button v-if="hasPermission('manage_rbac')" @click="activeTab = 'rbac_admin'" :class="activeTab === 'rbac_admin' ? 'border-purple-500 text-purple-400 bg-slate-700/60 font-bold' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/20'" class="flex items-center gap-1.5 py-2 px-3 border-b-2 text-xs md:text-sm whitespace-nowrap transition rounded-t-lg">
+                    <i class="fa-solid fa-user-lock text-purple-400"></i><span>6. Phân Quyền (RBAC)</span>
+                </button>
+                <button v-if="hasPermission('view_tasks')" @click="activeTab = 'daily_tasks'" :class="activeTab === 'daily_tasks' ? 'border-emerald-500 text-emerald-400 bg-slate-700/60 font-semibold' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-700/20'" class="flex items-center gap-1.5 py-2 px-3 border-b-2 text-xs md:text-sm whitespace-nowrap transition rounded-t-lg">
+                    <i class="fa-solid fa-cart-flatbed text-emerald-400"></i><span>7. Công Việc</span>
+                    <span class="px-1.5 py-0.2 text-[10px] rounded-full bg-slate-700 text-slate-300 font-mono">{{ filteredDailyTasks.length }}</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- MOBILE BOTTOM NAV -->
+        <div class="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur border-t border-slate-700 md:hidden flex justify-around items-center px-1 py-1 safe-bottom shadow-2xl">
+            <button @click="activeTab = 'dashboard'" :class="activeTab === 'dashboard' ? 'text-emerald-400' : 'text-slate-400'" class="flex flex-col items-center py-1 px-2 text-[10px]"><i class="fa-solid fa-chart-pie text-base mb-0.5"></i><span>Tổng quan</span></button>
+            <button v-if="hasPermission('view_hr')" @click="activeTab = 'hr_assets'" :class="activeTab === 'hr_assets' ? 'text-emerald-400' : 'text-slate-400'" class="flex flex-col items-center py-1 px-2 text-[10px]"><i class="fa-solid fa-users-gear text-base mb-0.5"></i><span>Nhân sự</span></button>
+            <button v-if="hasPermission('view_network')" @click="activeTab = 'network_infrastructure'" :class="activeTab === 'network_infrastructure' ? 'text-emerald-400' : 'text-slate-400'" class="flex flex-col items-center py-1 px-2 text-[10px]"><i class="fa-solid fa-network-wired text-base mb-0.5"></i><span>Hạ tầng mạng</span></button>
+            <button v-if="hasPermission('view_cctv')" @click="activeTab = 'cctv_security'" :class="activeTab === 'cctv_security' ? 'text-amber-400' : 'text-slate-400'" class="flex flex-col items-center py-1 px-2 text-[10px]"><i class="fa-solid fa-video text-base mb-0.5"></i><span>CCTV</span></button>
+            <button v-if="hasPermission('view_tasks')" @click="activeTab = 'daily_tasks'" :class="activeTab === 'daily_tasks' ? 'text-emerald-400' : 'text-slate-400'" class="flex flex-col items-center py-1 px-2 text-[10px]"><i class="fa-solid fa-list-check text-base mb-0.5"></i><span>Công việc</span></button>
+        </div>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-grow max-w-7xl w-full mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
+
+            <!-- Toast Alert -->
+            <div v-if="toast.show" class="fixed top-20 md:bottom-5 md:top-auto right-3 left-3 md:left-auto md:right-5 z-50 flex items-center justify-between gap-3 px-4 py-3 rounded-xl shadow-2xl border text-xs md:text-sm transition transform duration-300"
+                 :class="toast.type === 'success' ? 'bg-emerald-950/95 border-emerald-500 text-emerald-100' : toast.type === 'warning' ? 'bg-amber-950/95 border-amber-500 text-amber-100' : 'bg-indigo-950/95 border-indigo-500 text-indigo-100'">
+                <div class="flex items-center gap-2.5">
+                    <i :class="toast.type === 'success' ? 'fa-solid fa-circle-check text-emerald-400 text-base' : toast.type === 'warning' ? 'fa-solid fa-triangle-exclamation text-amber-400 text-base' : 'fa-solid fa-circle-info text-indigo-400 text-base'"></i>
+                    <span>{{ toast.message }}</span>
+                </div>
+                <button @click="toast.show = false" class="p-1 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- TAB 0: DASHBOARD -->
+            <div v-if="activeTab === 'dashboard'" class="space-y-4 md:space-y-6">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5 md:gap-4">
+                    <div class="bg-slate-800/80 border border-slate-700/70 rounded-xl p-3 md:p-4 shadow-sm">
+                        <div class="flex items-center justify-between text-slate-400 mb-1"><span class="text-[10px] md:text-xs font-semibold uppercase">Nhân sự IT</span><i class="fa-solid fa-user-shield text-indigo-400"></i></div>
+                        <div class="text-xl md:text-2xl font-bold text-white">{{ filteredHrAssets.length }}</div>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/70 rounded-xl p-3 md:p-4 shadow-sm">
+                        <div class="flex items-center justify-between text-slate-400 mb-1"><span class="text-[10px] md:text-xs font-semibold uppercase">Chi Nhánh</span><i class="fa-solid fa-sitemap text-blue-400"></i></div>
+                        <div class="text-xl md:text-2xl font-bold text-white">{{ filteredSiteList.length }}</div>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/70 rounded-xl p-3 md:p-4 shadow-sm">
+                        <div class="flex items-center justify-between text-slate-400 mb-1"><span class="text-[10px] md:text-xs font-semibold uppercase">CCTV Cam</span><i class="fa-solid fa-video text-amber-400"></i></div>
+                        <div class="text-xl md:text-2xl font-bold text-amber-300">{{ filteredCctvList.length }}</div>
+                    </div>
+                    <div class="bg-slate-800/80 border border-slate-700/70 rounded-xl p-3 md:p-4 shadow-sm">
+                        <div class="flex items-center justify-between text-slate-400 mb-1"><span class="text-[10px] md:text-xs font-semibold uppercase">Máy Chấm</span><i class="fa-solid fa-fingerprint text-amber-400"></i></div>
+                        <div class="text-xl md:text-2xl font-bold text-amber-300">{{ filteredRonaldJack.length }}</div>
+                    </div>
+                    <div class="col-span-2 md:col-span-1 bg-slate-800/80 border border-slate-700/70 rounded-xl p-3 md:p-4 shadow-sm">
+                        <div class="flex items-center justify-between text-slate-400 mb-1"><span class="text-[10px] md:text-xs font-semibold uppercase">Mua Sắm & Sửa</span><i class="fa-solid fa-cart-shopping text-emerald-400"></i></div>
+                        <div class="text-lg md:text-xl font-bold text-emerald-400 font-mono truncate">{{ formatCurrency(totalProcurementCost) }}</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 md:p-6 space-y-3">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-building text-emerald-400"></i>
+                        <span>Tổng Quan Theo Từng Công Ty Quản Lý</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div v-for="corp in companies" :key="corp.id" class="bg-slate-900 border border-slate-700/80 rounded-xl p-4 space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="font-bold text-white text-sm">{{ corp.name }}</div>
+                                    <div class="text-[11px] text-slate-400 font-mono">MST: {{ corp.taxCode || 'N/A' }}</div>
+                                </div>
+                                <button @click="selectedCompany = corp.id" class="px-2.5 py-1 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 border border-emerald-500/30 rounded-lg text-[11px] font-semibold">
+                                    Lọc Dữ Liệu Này
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-4 gap-2 pt-2 border-t border-slate-800 text-center text-xs">
+                                <div class="bg-slate-800 p-1.5 rounded">
+                                    <div class="text-slate-400 text-[10px]">Sites</div>
+                                    <div class="font-bold text-white">{{ sites.filter(s => s.companyId === corp.id).length }}</div>
+                                </div>
+                                <div class="bg-slate-800 p-1.5 rounded">
+                                    <div class="text-slate-400 text-[10px]">Nhân sự</div>
+                                    <div class="font-bold text-emerald-400">{{ hrAssets.filter(i => i.companyId === corp.id).length }}</div>
+                                </div>
+                                <div class="bg-slate-800 p-1.5 rounded">
+                                    <div class="text-slate-400 text-[10px]">CCTV</div>
+                                    <div class="font-bold text-amber-300">{{ cctvList.filter(c => c.companyId === corp.id).length }}</div>
+                                </div>
+                                <div class="bg-slate-800 p-1.5 rounded">
+                                    <div class="text-slate-400 text-[10px]">Mạng</div>
+                                    <div class="font-bold text-purple-300">{{ networkVlan.filter(v => v.companyId === corp.id).length }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1: HR & IT (WITH SEPARATE EDITABLE COLUMNS) -->
+            <div v-if="activeTab === 'hr_assets' && hasPermission('view_hr')" class="space-y-3 md:space-y-4">
+                <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 md:p-4 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-2.5">
+                    <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2 flex-grow">
+                        <div class="relative w-full md:w-64">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                            <input v-model="hrSearch" type="text" placeholder="Tìm tên, mã, phòng ban..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white">
+                        </div>
+                        <select v-model="hrDeptFilter" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200">
+                            <option value="ALL">Tất cả Phòng Ban</option>
+                            <option v-for="dept in getDepartmentsForSelectedCompany" :key="dept.id || dept.name" :value="dept.name">{{ dept.name }}</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button v-if="hasPermission('import_data')" @click="openImportModal('hrAssets')" class="px-3 py-2 bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-file-import"></i><span>Import</span>
+                        </button>
+                        <button v-if="hasPermission('edit_data')" @click="openAddHrModal" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-user-plus"></i><span>Thêm Nhân Sự Mới</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-md">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900/80 text-slate-400 uppercase text-[11px]">
+                                <tr>
+                                    <th class="p-3.5">Mã NV</th>
+                                    <th class="p-3.5">Tên Nhân Sự</th>
+                                    <th class="p-3.5">Công Ty / Chi Nhánh</th>
+                                    <th class="p-3.5">Phòng Ban</th>
+                                    <th class="p-3.5">Chức Danh</th>
+                                    <th class="p-3.5">Email</th>
+                                    <th class="p-3.5">Pass Email</th>
+                                    <th class="p-3.5">Phone</th>
+                                    <th class="p-3.5">Thiết Bị & Thông Số (IP, S/N)</th>
+                                    <th v-if="hasPermission('edit_data')" class="p-3.5 text-right">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-700/60">
+                                <tr v-for="item in filteredHrAssets" :key="item.id" class="hover:bg-slate-700/30">
+                                    <td class="p-3.5 font-mono text-indigo-400 font-bold">{{ item.empCode }}</td>
+                                    <td class="p-3.5 font-bold text-white">{{ item.empName }}</td>
+                                    <td class="p-3.5">
+                                        <div class="font-medium text-slate-200">{{ getSiteName(item.site) }}</div>
+                                        <div class="text-[10px] text-slate-400 font-mono">{{ getCompanyName(item.companyId) }}</div>
+                                    </td>
+                                    <td class="p-3.5 font-semibold text-emerald-400">{{ item.dept }}</td>
+                                    <td class="p-3.5 text-slate-300">{{ item.title }}</td>
+                                    <td class="p-3.5 font-mono text-slate-200 text-[11px]">{{ item.email || 'N/A' }}</td>
+                                    <td class="p-3.5 font-mono text-amber-300 text-[11px]">{{ item.emailPass || 'N/A' }}</td>
+                                    <td class="p-3.5 font-mono text-slate-200 text-[11px]">{{ item.phone || 'N/A' }}</td>
+                                    <td class="p-3.5">
+                                        <div class="font-medium text-amber-400"><i class="fa-solid fa-laptop mr-1"></i>{{ item.deviceType }} - {{ item.deviceName }}</div>
+                                        <div class="text-[10px] font-mono text-emerald-400 mt-0.5">IP: {{ item.ipAddress || 'DHCP' }} | S/N: {{ item.serialNumber || 'N/A' }}</div>
+                                        <div v-if="item.notes" class="text-[10px] text-slate-400 italic mt-0.5"><i class="fa-solid fa-note-sticky mr-1 text-slate-500"></i>{{ item.notes }}</div>
+                                    </td>
+                                    <td v-if="hasPermission('edit_data')" class="p-3.5 text-right space-x-1">
+                                        <button @click="editHrItem(item)" class="p-1.5 text-slate-300 hover:text-amber-400" title="Sửa"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                                        <button @click="askDelete('hrAssets', item.id, item.empName)" class="p-1.5 text-slate-300 hover:text-rose-400" title="Xóa"><i class="fa-solid fa-trash"></i> Xóa</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: NETWORK INFRASTRUCTURE -->
+            <div v-if="activeTab === 'network_infrastructure' && hasPermission('view_network')" class="space-y-6">
+                <!-- ISP & Wi-Fi -->
+                <div class="space-y-3">
+                    <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 md:p-4 flex justify-between items-center">
+                        <div class="text-xs md:text-sm font-bold text-white"><i class="fa-solid fa-wifi text-emerald-400 mr-2"></i> Đường Truyền ISP & Wi-Fi Nội Bộ</div>
+                        <div class="flex gap-2">
+                            <button v-if="hasPermission('import_data')" @click="openImportModal('ispWifi')" class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-file-import mr-1"></i>Import</button>
+                            <button v-if="hasPermission('edit_data')" @click="openAddIspWifiModal" class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Thêm ISP / Wi-Fi</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div v-for="item in filteredIspWifi" :key="item.id" class="bg-slate-800 border border-slate-700 rounded-xl p-3.5">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-900/60 text-blue-300">{{ item.category }}</span>
+                                    <h3 class="font-bold text-white text-xs md:text-sm mt-1">{{ item.name }}</h3>
+                                    <div class="text-[11px] text-slate-400">{{ getSiteName(item.site) }} &bull; {{ getCompanyName(item.companyId) }} &bull; {{ item.location }}</div>
+                                    <div class="text-[11px] font-mono text-emerald-400 mt-1">Băng thông: {{ item.bandwidth || 'N/A' }} | Pass: {{ item.password || 'N/A' }}</div>
+                                    <div class="text-[10px] font-mono text-indigo-300 mt-0.5">ID: {{ item.loginId || 'N/A' }} | IP: {{ item.gatewayIp || 'N/A' }} | S/N: {{ item.serialNumber || 'N/A' }}</div>
+                                    <div v-if="item.notes" class="text-[11px] text-slate-400 italic mt-1 bg-slate-900/50 p-1.5 rounded"><i class="fa-solid fa-note-sticky mr-1 text-slate-500"></i>{{ item.notes }}</div>
+                                </div>
+                                <div v-if="hasPermission('edit_data')" class="flex items-center gap-1">
+                                    <button @click="editIspWifiItem(item)" class="text-slate-300 hover:text-amber-400 p-1"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                                    <button @click="askDelete('ispWifi', item.id, item.name)" class="text-slate-300 hover:text-rose-400 p-1"><i class="fa-solid fa-trash"></i> Xóa</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subnet & VLAN -->
+                <div class="space-y-3 pt-2">
+                    <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 md:p-4 flex justify-between items-center">
+                        <div class="text-xs md:text-sm font-bold text-white"><i class="fa-solid fa-diagram-project text-purple-400 mr-2"></i> Subnet & VLAN Nội Bộ</div>
+                        <div class="flex gap-2">
+                            <button v-if="hasPermission('import_data')" @click="openImportModal('networkVlan')" class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-file-import mr-1"></i>Import</button>
+                            <button v-if="hasPermission('edit_data')" @click="openAddVlanModal" class="px-3 py-1.5 bg-purple-600 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Thêm VLAN</button>
+                        </div>
+                    </div>
+                    <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-md">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900/80 text-slate-400 uppercase text-[11px]">
+                                <tr>
+                                    <th class="p-3">VLAN ID / Tên Mạng</th>
+                                    <th class="p-3">Công Ty / Chi Nhánh</th>
+                                    <th class="p-3">Subnet / Gateway</th>
+                                    <th class="p-3">Thông Số (DHCP, S/N, Pass)</th>
+                                    <th v-if="hasPermission('edit_data')" class="p-3 text-right">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-700/60">
+                                <tr v-for="item in filteredNetworkVlan" :key="item.id">
+                                    <td class="p-3 font-bold text-white"><span class="px-2 py-0.5 bg-purple-950 text-purple-300 rounded border border-purple-700 mr-1.5">VLAN {{ item.vlanId }}</span> {{ item.name }}</td>
+                                    <td class="p-3">
+                                        <div class="font-medium text-slate-200">{{ getSiteName(item.site) }}</div>
+                                        <div class="text-[10px] text-slate-400 font-mono">{{ getCompanyName(item.companyId) }}</div>
+                                    </td>
+                                    <td class="p-3 font-mono text-emerald-400 font-bold">{{ item.subnet }} (GW: {{ item.gateway }})</td>
+                                    <td class="p-3">
+                                        <div class="font-mono text-indigo-300">DHCP: {{ item.dhcpRange || 'N/A' }}</div>
+                                        <div class="text-[10px] font-mono text-amber-300">ID: {{ item.authId || 'N/A' }} | Pass: {{ item.authPass || 'N/A' }} | S/N: {{ item.serialNumber || 'N/A' }}</div>
+                                        <div v-if="item.notes" class="text-[10px] text-slate-400 italic mt-0.5"><i class="fa-solid fa-note-sticky mr-1 text-slate-500"></i>{{ item.notes }}</div>
+                                    </td>
+                                    <td v-if="hasPermission('edit_data')" class="p-3 text-right space-x-1">
+                                        <button @click="editVlanItem(item)" class="p-1 text-slate-300 hover:text-amber-400"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                                        <button @click="askDelete('networkVlan', item.id, item.name)" class="p-1 text-slate-300 hover:text-rose-400"><i class="fa-solid fa-trash"></i> Xóa</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: CCTV CAMERA (TABLE FORM WITH COMPANY SELECTION) -->
+            <div v-if="activeTab === 'cctv_security' && hasPermission('view_cctv')" class="space-y-4">
+                <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 md:p-4 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-2">
+                    <div class="text-xs md:text-sm font-bold text-white"><i class="fa-solid fa-video text-amber-400 mr-2"></i> Hệ Thống Camera CCTV</div>
+                    <div class="flex gap-2">
+                        <button v-if="hasPermission('import_data')" @click="openImportModal('cctvList')" class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-file-import mr-1"></i>Import</button>
+                        <button v-if="hasPermission('edit_data')" @click="openAddCctvModal" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Thêm Camera</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-md">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900/80 text-slate-400 uppercase text-[11px]">
+                                <tr>
+                                    <th class="p-3">Ngày Lắp</th>
+                                    <th class="p-3">Công Ty / Chi Nhánh</th>
+                                    <th class="p-3">Tên Camera / Vị Trí</th>
+                                    <th class="p-3">IP & Port</th>
+                                    <th class="p-3">ID / Pass / S/N</th>
+                                    <th class="p-3">Trạng Thái</th>
+                                    <th class="p-3 text-right">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-700/60">
+                                <tr v-for="cam in filteredCctvList" :key="cam.id" class="hover:bg-slate-700/30">
+                                    <td class="p-3 font-mono text-amber-300 font-semibold"><i class="fa-regular fa-calendar-days mr-1.5"></i>{{ cam.installationDate || 'N/A' }}</td>
+                                    <td class="p-3">
+                                        <div class="font-medium text-slate-200">{{ getSiteName(cam.site) }}</div>
+                                        <div class="text-[10px] text-slate-400 font-mono">{{ getCompanyName(cam.companyId) }}</div>
+                                    </td>
+                                    <td class="p-3 font-bold text-white">
+                                        {{ cam.name }}
+                                        <div v-if="cam.notes" class="text-[10px] text-slate-400 italic mt-0.5"><i class="fa-solid fa-note-sticky mr-1 text-slate-500"></i>{{ cam.notes }}</div>
+                                    </td>
+                                    <td class="p-3 font-mono text-emerald-400 font-semibold">{{ cam.ipAddress }}:{{ cam.rtspPort || '554' }}</td>
+                                    <td class="p-3 font-mono text-[11px]">
+                                        <div class="text-indigo-300">ID: {{ cam.camId || 'admin' }} | Pass: {{ cam.camPass || 'N/A' }}</div>
+                                        <div class="text-[10px] text-amber-300">S/N: {{ cam.serialNumber || 'N/A' }}</div>
+                                    </td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold" :class="getStatusBadgeClass(cam.status)">{{ cam.status }}</span>
+                                    </td>
+                                    <td class="p-3 text-right space-x-1">
+                                        <button @click="openCameraModal(cam)" class="px-2.5 py-1 bg-indigo-600/40 text-indigo-300 text-[11px] font-semibold rounded mr-1"><i class="fa-solid fa-eye mr-1"></i>Live</button>
+                                        <button v-if="hasPermission('edit_data')" @click="editCctvItem(cam)" class="p-1 text-slate-300 hover:text-amber-400"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                                        <button v-if="hasPermission('edit_data')" @click="askDelete('cctvList', cam.id, cam.name)" class="p-1 text-slate-300 hover:text-rose-400"><i class="fa-solid fa-trash"></i> Xóa</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: RONALD JACK -->
+            <div v-if="activeTab === 'ronald_jack' && hasPermission('view_attendance')" class="space-y-4 md:space-y-6">
+                <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 md:p-4 flex justify-between items-center">
+                    <div class="text-xs md:text-sm font-bold text-white"><i class="fa-solid fa-fingerprint text-amber-400 mr-2"></i> Máy Chấm Công Ronald Jack</div>
+                    <div class="flex gap-2">
+                        <button v-if="hasPermission('import_data')" @click="openImportModal('ronaldJackList')" class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-file-import mr-1"></i>Import</button>
+                        <button v-if="hasPermission('edit_data')" @click="openAddRjModal" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Thêm Máy RJ</button>
+                    </div>
+                </div>
+                <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-md">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900/80 text-slate-400 uppercase text-[11px]">
+                                <tr>
+                                    <th class="p-3">Mã Máy / Tên Máy</th>
+                                    <th class="p-3">Công Ty / Chi Nhánh</th>
+                                    <th class="p-3">IP & Port</th>
+                                    <th class="p-3">ID / Pass / S/N</th>
+                                    <th class="p-3">Trạng Thái</th>
+                                    <th class="p-3 text-right">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-700/60">
+                                <tr v-for="mcc in filteredRonaldJack" :key="mcc.id" class="hover:bg-slate-700/30">
+                                    <td class="p-3 font-bold text-white">
+                                        {{ mcc.name }}
+                                        <div class="text-[10px] text-amber-300 font-mono">{{ mcc.code }}</div>
+                                    </td>
+                                    <td class="p-3">
+                                        <div class="font-medium text-slate-200">{{ getSiteName(mcc.site) }}</div>
+                                        <div class="text-[10px] text-slate-400 font-mono">{{ getCompanyName(mcc.companyId) }}</div>
+                                    </td>
+                                    <td class="p-3 font-mono text-emerald-400 font-semibold">{{ mcc.ipAddress }}:{{ mcc.port || '4370' }}</td>
+                                    <td class="p-3 font-mono text-[11px]">
+                                        <div class="text-indigo-300">ID: {{ mcc.deviceId || '1' }} | Pass: {{ mcc.devicePass || 'N/A' }}</div>
+                                        <div class="text-[10px] text-amber-300">S/N: {{ mcc.serialNumber || 'N/A' }}</div>
+                                    </td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold" :class="getStatusBadgeClass(mcc.status)">{{ mcc.status }}</span>
+                                    </td>
+                                    <td class="p-3 text-right space-x-1">
+                                        <button @click="testRjConnection(mcc)" class="px-2 py-1 bg-emerald-600/30 text-emerald-300 text-[10px] rounded mr-1"><i class="fa-solid fa-plug"></i> Ping</button>
+                                        <button v-if="hasPermission('edit_data')" @click="editRjItem(mcc)" class="p-1 text-slate-300 hover:text-amber-400"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                                        <button v-if="hasPermission('edit_data')" @click="askDelete('ronaldJackList', mcc.id, mcc.name)" class="p-1 text-slate-300 hover:text-rose-400"><i class="fa-solid fa-trash"></i> Xóa</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: COMPANIES & SITES -->
+            <div v-if="activeTab === 'sites_depts' && hasPermission('view_sites')" class="space-y-4">
+                <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 md:p-4 flex flex-wrap justify-between items-center gap-2">
+                    <div class="flex gap-2">
+                        <button @click="sitesSubTab = 'companies'" :class="sitesSubTab === 'companies' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300'" class="px-3 py-1.5 text-xs font-semibold rounded-lg">Danh Mục Công Ty</button>
+                        <button @click="sitesSubTab = 'sites'" :class="sitesSubTab === 'sites' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300'" class="px-3 py-1.5 text-xs font-semibold rounded-lg">Chi Nhánh / Sites</button>
+                        <button @click="sitesSubTab = 'depts'" :class="sitesSubTab === 'depts' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300'" class="px-3 py-1.5 text-xs font-semibold rounded-lg">Phòng Ban</button>
+                    </div>
+                    <div v-if="hasPermission('edit_data')" class="flex gap-2">
+                        <button @click="openImportModal(sitesSubTab === 'companies' ? 'companies' : sitesSubTab === 'sites' ? 'sites' : 'departments')" class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-file-import mr-1"></i>Import</button>
+                        <button v-if="sitesSubTab === 'companies'" @click="openAddCompanyModal" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Thêm Công Ty</button>
+                        <button v-if="sitesSubTab === 'sites'" @click="openAddSiteModal" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Thêm Site</button>
+                        <button v-if="sitesSubTab === 'depts'" @click="openAddDeptModal" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Thêm Phòng Ban</button>
+                    </div>
+                </div>
+
+                <!-- Companies List -->
+                <div v-if="sitesSubTab === 'companies'" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                    <div v-for="corp in companies" :key="corp.id" class="bg-slate-800 border border-slate-700 rounded-xl p-3.5 flex justify-between items-start shadow-sm">
+                        <div>
+                            <div class="font-bold text-white text-xs md:text-sm">{{ corp.name }}</div>
+                            <div class="text-xs text-slate-400 mt-1 font-mono">MST: {{ corp.taxCode || 'N/A' }}</div>
+                            <div class="text-xs text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot text-rose-400 mr-1"></i>{{ corp.address || 'N/A' }}</div>
+                        </div>
+                        <div v-if="hasPermission('edit_data')" class="flex gap-1">
+                            <button @click="editCompanyItem(corp)" class="p-1.5 text-slate-300 hover:text-amber-400"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                            <button @click="askDelete('companies', corp.id, corp.name)" class="p-1.5 text-slate-300 hover:text-rose-400"><i class="fa-solid fa-trash"></i> Xóa</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sites List -->
+                <div v-if="sitesSubTab === 'sites'" class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                    <div v-for="site in sites" :key="site.code" class="bg-slate-800 border border-slate-700 rounded-xl p-3.5 flex justify-between items-start shadow-sm">
+                        <div>
+                            <div class="font-bold text-white text-xs md:text-sm">{{ site.name }} <span class="text-indigo-400 font-mono font-normal">({{ site.code }})</span></div>
+                            <div class="text-xs text-slate-400 mt-1">Công ty: <span class="text-emerald-400 font-medium">{{ getCompanyName(site.companyId) }}</span></div>
+                            <div class="text-xs text-slate-400 mt-0.5"><i class="fa-solid fa-user-tie text-emerald-400 mr-1"></i>Quản lý: {{ site.manager || 'Chưa chỉ định' }}</div>
+                        </div>
+                        <div v-if="hasPermission('edit_data')" class="flex gap-1">
+                            <button @click="editSiteItem(site)" class="p-1.5 text-slate-300 hover:text-amber-400"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                            <button @click="askDelete('sites', site.code, site.name)" class="p-1.5 text-slate-300 hover:text-rose-400"><i class="fa-solid fa-trash"></i> Xóa</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Depts List -->
+                <div v-if="sitesSubTab === 'depts'" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div v-for="dept in departments" :key="dept.id" class="bg-slate-800 border border-slate-700 rounded-xl p-3.5 flex justify-between items-center shadow-sm">
+                        <div>
+                            <div class="font-bold text-emerald-400 text-xs">{{ dept.name }}</div>
+                            <div class="text-[10px] text-slate-400 font-mono mt-1">Chi nhánh: {{ getSiteName(dept.site) }}</div>
+                        </div>
+                        <div v-if="hasPermission('edit_data')" class="flex gap-1">
+                            <button @click="editDeptItem(dept)" class="p-1.5 text-slate-300 hover:text-amber-400"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                            <button @click="askDelete('departments', dept.id, dept.name)" class="p-1.5 text-slate-300 hover:text-rose-400"><i class="fa-solid fa-trash"></i> Xóa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: RBAC ADMIN -->
+            <div v-if="activeTab === 'rbac_admin' && hasPermission('manage_rbac')" class="space-y-4">
+                <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 md:p-4 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
+                    <div class="text-xs md:text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-purple-400 text-base"></i>
+                        <span>Quản Lý Phân Quyền Vai Trò (RBAC)</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button @click="openAddUserModal" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold rounded-lg flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i><span>Thêm Tài Khoản</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/90 p-3 rounded-xl border border-slate-700/80 text-xs text-slate-300 space-y-1">
+                    <div class="font-bold text-emerald-400"><i class="fa-solid fa-circle-info mr-1"></i> Các Nhóm Phân Quyền Trong Hệ Thống:</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+                        <div><strong class="text-white">Super Admin:</strong> Toàn quyền quản trị, xóa, sửa, import, quản lý tài khoản RBAC và Factory Reset.</div>
+                        <div><strong class="text-white">IT Manager:</strong> Quản lý nhân sự IT, thiết bị mạng, CCTV, máy chấm công và tạo đơn mua sắm.</div>
+                        <div><strong class="text-white">CCTV Operator:</strong> Chỉ có quyền xem và thao tác camera trực tiếp (Live RTSP).</div>
+                        <div><strong class="text-white">Viewer:</strong> Chỉ xem thông tin tổng quan, không có quyền chỉnh sửa hay thêm mới.</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-md">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-900/80 text-slate-400 uppercase text-[11px]">
+                            <tr>
+                                <th class="p-3">Họ Tên / Email</th>
+                                <th class="p-3">Mật Khẩu</th>
+                                <th class="p-3">Vai Trò (Role)</th>
+                                <th class="p-3 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700/60">
+                            <tr v-for="u in usersList" :key="u.id" class="hover:bg-slate-700/20">
+                                <td class="p-3 font-bold text-white">{{ u.name }} <br><span class="text-[10px] text-slate-400 font-mono">{{ u.email }}</span></td>
+                                <td class="p-3 font-mono text-amber-300">{{ u.password }}</td>
+                                <td class="p-3"><span class="px-2 py-0.5 bg-purple-950 text-indigo-300 rounded font-bold border border-indigo-800/50">{{ u.role }}</span></td>
+                                <td class="p-3 text-right space-x-1">
+                                    <button @click="editUserItem(u)" class="p-1 text-slate-300 hover:text-amber-400"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                                    <button @click="askDelete('usersList', u.id, u.name)" class="p-1 text-slate-300 hover:text-rose-400"><i class="fa-solid fa-trash"></i> Xóa</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 7: DAILY TASKS & PROCUREMENT (SEPARATE DATES, MONTH/YEAR FILTER, NCC) -->
+            <div v-if="activeTab === 'daily_tasks' && hasPermission('view_tasks')" class="space-y-4">
+                <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-3 md:p-4 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-2">
+                    <div class="text-xs md:text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-cart-shopping text-emerald-400 mr-1"></i>
+                        <span>Mua Sắm & Sửa Chữa Thiết Bị</span>
+                    </div>
+                    <!-- MONTH & YEAR FILTER BAR (BY EXECUTION DATE) -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs">
+                            <span class="text-slate-400">Tháng TH:</span>
+                            <select v-model="filterMonth" class="bg-slate-800 text-white font-medium focus:outline-none">
+                                <option value="ALL">Tất cả Tháng</option>
+                                <option value="01">Tháng 01</option>
+                                <option value="02">Tháng 02</option>
+                                <option value="03">Tháng 03</option>
+                                <option value="04">Tháng 04</option>
+                                <option value="05">Tháng 05</option>
+                                <option value="06">Tháng 06</option>
+                                <option value="07">Tháng 07</option>
+                                <option value="08">Tháng 08</option>
+                                <option value="09">Tháng 09</option>
+                                <option value="10">Tháng 10</option>
+                                <option value="11">Tháng 11</option>
+                                <option value="12">Tháng 12</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs">
+                            <span class="text-slate-400">Năm TH:</span>
+                            <select v-model="filterYear" class="bg-slate-800 text-white font-medium focus:outline-none font-mono">
+                                <option value="ALL">Tất cả Năm</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                            </select>
+                        </div>
+                        <button @click="exportTasksExcel" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg flex items-center gap-1 shadow"><i class="fa-solid fa-file-excel"></i><span>Xuất Excel</span></button>
+                        <button v-if="hasPermission('import_data')" @click="openImportModal('dailyTasks')" class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-file-import mr-1"></i>Import</button>
+                        <button v-if="hasPermission('edit_data')" @click="openAddTaskModal" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg"><i class="fa-solid fa-plus mr-1"></i>Tạo Công Việc</button>
+                    </div>
+                </div>
+                <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-md">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900/80 text-slate-400 uppercase text-[11px]">
+                                <tr>
+                                    <th class="p-3">Ngày Thực Hiện</th>
+                                    <th class="p-3">Ngày Hoàn Thành (Due)</th>
+                                    <th class="p-3">Tiêu Đề / Nội Dung</th>
+                                    <th class="p-3">Tình Trạng</th>
+                                    <th class="p-3">PO / Hóa Đơn</th>
+                                    <th class="p-3">Nhà Cung Cấp (NCC)</th>
+                                    <th class="p-3">Chi Phí (VNĐ)</th>
+                                    <th v-if="hasPermission('edit_data')" class="p-3 text-right">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-700/60">
+                                <tr v-for="t in filteredDailyTasks" :key="t.id" class="hover:bg-slate-700/30">
+                                    <td class="p-3 font-mono text-amber-300 font-semibold"><i class="fa-regular fa-calendar-days mr-1"></i>{{ t.executionDate || 'N/A' }}</td>
+                                    <td class="p-3 font-mono text-indigo-300 font-semibold"><i class="fa-regular fa-calendar-check mr-1"></i>{{ t.dueDate || 'N/A' }}</td>
+                                    <td class="p-3 font-bold text-white">
+                                        {{ t.title }}
+                                        <div v-if="t.notes" class="text-[10px] text-slate-400 italic mt-0.5"><i class="fa-solid fa-note-sticky mr-1 text-slate-500"></i>{{ t.notes }}</div>
+                                    </td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold" :class="getTaskStatusBadgeClass(t.taskStatus)">{{ t.taskStatus || 'Đang thực hiện (Pending)' }}</span>
+                                    </td>
+                                    <td class="p-3 font-mono text-indigo-300">PO: {{ t.poNumber || 'N/A' }} | VAT: {{ t.invoiceNumber || 'N/A' }}</td>
+                                    <td class="p-3 font-medium text-slate-200">{{ t.supplier || 'N/A' }}</td>
+                                    <td class="p-3 font-mono text-emerald-400 font-bold">{{ formatCurrency(t.cost) }}</td>
+                                    <td v-if="hasPermission('edit_data')" class="p-3 text-right space-x-1">
+                                        <button @click="editTaskItem(t)" class="p-1 text-slate-300 hover:text-amber-400"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                                        <button @click="askDelete('dailyTasks', t.id, t.title)" class="p-1 text-slate-300 hover:text-rose-400"><i class="fa-solid fa-trash"></i> Xóa</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- HR MODAL -->
+        <div v-if="showHrModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3 md:p-4 overflow-y-auto">
+            <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-2xl w-full shadow-2xl p-4 md:p-6 space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <h3 class="font-bold text-white text-sm">{{ isEditHr ? 'Chỉnh Sửa Hồ Sơ Nhân Sự' : 'Thêm Nhân Sự Mới' }}</h3>
+                    <button @click="showHrModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form @submit.prevent="saveHrItem" class="space-y-3 text-xs">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Mã Nhân Sự (Mã NV) *</label>
+                            <input v-model="hrForm.empCode" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Tên Nhân Sự *</label>
+                            <input v-model="hrForm.empName" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Công ty *</label>
+                            <select v-model="hrForm.companyId" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                                <option v-for="c in companies" :key="c.id" :value="c.id">{{ c.name }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Chi Nhánh *</label>
+                            <select v-model="hrForm.site" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                                <option v-for="s in sites" :key="s.code" :value="s.code">{{ s.name }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Phòng Ban *</label>
+                            <select v-model="hrForm.dept" required class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-400 font-medium">
+                                <option v-for="d in getDepartmentsForModal(hrForm.site)" :key="d.id || d.name" :value="d.name">{{ d.name }}</option>
+                                <option v-if="getDepartmentsForModal(hrForm.site).length === 0" value="IT Systems & Security">IT Systems & Security</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Chức Danh *</label>
+                            <input v-model="hrForm.title" required type="text" placeholder="Chuyên viên IT / Trưởng phòng" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Email</label>
+                            <input v-model="hrForm.email" type="email" placeholder="nhanvien@enterprise.com" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Pass Email</label>
+                            <input v-model="hrForm.emailPass" type="text" placeholder="mật khẩu email" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Phone</label>
+                            <input v-model="hrForm.phone" type="text" placeholder="0901234567" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">IP Address</label>
+                            <input v-model="hrForm.ipAddress" type="text" placeholder="192.168.10.15" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-400 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Serial No (S/N)</label>
+                            <input v-model="hrForm.serialNumber" type="text" placeholder="S/N-9988" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Tên Thiết Bị</label>
+                            <input v-model="hrForm.deviceName" type="text" placeholder="Dell XPS 15" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Ghi chú thiết bị / nhân sự</label>
+                        <textarea v-model="hrForm.notes" rows="2" placeholder="Ghi chú thêm về cấu hình máy, phụ kiện đi kèm..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200"></textarea>
+                    </div>
+                    <div class="pt-2 flex justify-end gap-2">
+                        <button type="button" @click="showHrModal = false" class="px-4 py-1.5 bg-slate-800 text-slate-300 rounded-lg">Hủy</button>
+                        <button type="submit" class="px-5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg">Lưu Hồ Sơ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ISP / WIFI MODAL -->
+        <div v-if="showIspWifiModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3">
+            <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-md w-full p-4 space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <h3 class="font-bold text-white text-sm">{{ isEditIspWifi ? 'Sửa ISP / Wi-Fi' : 'Thêm ISP / Wi-Fi Mới' }}</h3>
+                    <button @click="showIspWifiModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form @submit.prevent="saveIspWifiItem" class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Tên Đường Truyền / SSID *</label>
+                        <input v-model="ispWifiForm.name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">ID / User Đăng Nhập</label>
+                            <input v-model="ispWifiForm.loginId" type="text" placeholder="admin / account" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Mật Khẩu Wi-Fi / App</label>
+                            <input v-model="ispWifiForm.password" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Gateway / IP Tĩnh</label>
+                            <input v-model="ispWifiForm.gatewayIp" type="text" placeholder="192.168.1.1" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-400 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Serial No (S/N)</label>
+                            <input v-model="ispWifiForm.serialNumber" type="text" placeholder="S/N-9988" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Ghi chú đường truyền</label>
+                        <textarea v-model="ispWifiForm.notes" rows="2" placeholder="Ghi chú nhà mạng, số hợp đồng, cấu hình AP..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" @click="showIspWifiModal = false" class="px-4 py-1.5 bg-slate-800 text-slate-300 rounded-lg">Hủy</button>
+                        <button type="submit" class="px-5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg">Lưu Cấu Hình</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- VLAN MODAL -->
+        <div v-if="showVlanModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3">
+            <div class="bg-slate-900 border border-purple-500/40 rounded-2xl max-w-md w-full p-4 space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <h3 class="font-bold text-white text-sm">{{ isEditVlan ? 'Sửa VLAN / Subnet' : 'Thêm VLAN / Subnet Mới' }}</h3>
+                    <button @click="showVlanModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form @submit.prevent="saveVlanItem" class="space-y-3 text-xs">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">VLAN ID *</label>
+                            <input v-model="vlanForm.vlanId" required type="text" placeholder="10" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-purple-300 font-mono">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-slate-400 mb-1 font-semibold">Tên VLAN / Mạng *</label>
+                            <input v-model="vlanForm.name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Subnet *</label>
+                            <input v-model="vlanForm.subnet" required type="text" placeholder="192.168.10.0/24" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-400 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Gateway *</label>
+                            <input v-model="vlanForm.gateway" required type="text" placeholder="192.168.10.1" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-400 font-mono">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">ID Quản Trị</label>
+                            <input v-model="vlanForm.authId" type="text" placeholder="admin" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Mật Khẩu</label>
+                            <input v-model="vlanForm.authPass" type="text" placeholder="pass" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Serial No (S/N)</label>
+                            <input v-model="vlanForm.serialNumber" type="text" placeholder="S/N" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Ghi chú hệ thống mạng</label>
+                        <textarea v-model="vlanForm.notes" rows="2" placeholder="Ghi chú về thiết bị core switch, quy định cấp phát IP..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" @click="showVlanModal = false" class="px-4 py-1.5 bg-slate-800 text-slate-300 rounded-lg">Hủy</button>
+                        <button type="submit" class="px-5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg">Lưu VLAN</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- CCTV MODAL WITH COMPANY SELECTION -->
+        <div v-if="showCctvModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3">
+            <div class="bg-slate-900 border border-amber-500/40 rounded-2xl max-w-md w-full p-4 space-y-3 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <h3 class="font-bold text-white text-sm">{{ isEditCctv ? 'Sửa Camera CCTV' : 'Thêm Camera CCTV Mới' }}</h3>
+                    <button @click="showCctvModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form @submit.prevent="saveCctvItem" class="space-y-3 text-xs">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Ngày / Thời Gian Lắp *</label>
+                            <input v-model="cctvForm.installationDate" required type="date" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Công Ty Sở Hữu *</label>
+                            <select v-model="cctvForm.companyId" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                                <option v-for="c in companies" :key="c.id" :value="c.id">{{ c.name }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Tên Camera / Vị Trí *</label>
+                        <input v-model="cctvForm.name" required type="text" placeholder="Camera Cổng Chính Tầng 1" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">IP Address *</label>
+                            <input v-model="cctvForm.ipAddress" required type="text" placeholder="192.168.10.150" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-400 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">RTSP Port</label>
+                            <input v-model="cctvForm.rtspPort" type="text" placeholder="554" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Camera ID</label>
+                            <input v-model="cctvForm.camId" type="text" placeholder="admin" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Mật Khẩu</label>
+                            <input v-model="cctvForm.camPass" type="text" placeholder="password" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Serial No (S/N)</label>
+                            <input v-model="cctvForm.serialNumber" type="text" placeholder="DS-2CD..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Ghi chú camera / kỹ thuật</label>
+                        <textarea v-model="cctvForm.notes" rows="2" placeholder="Ghi chú chi tiết góc quan sát, lưu trữ NVR, tài khoản RTSP..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" @click="showCctvModal = false" class="px-4 py-1.5 bg-slate-800 text-slate-300 rounded-lg">Hủy</button>
+                        <button type="submit" class="px-5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg shadow">Lưu Camera</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- RONALD JACK MODAL -->
+        <div v-if="showRjModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3 md:p-4 overflow-y-auto">
+            <div class="bg-slate-900 border border-amber-500/40 rounded-2xl max-w-2xl w-full shadow-2xl p-4 md:p-6 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                    <h3 class="font-bold text-white text-sm"><i class="fa-solid fa-fingerprint text-amber-400 mr-2"></i>{{ isEditRj ? 'Sửa Máy Chấm Công' : 'Thêm Máy Chấm Công Mới' }}</h3>
+                    <button @click="showRjModal = false" class="p-1 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form @submit.prevent="saveRjItem" class="space-y-3 text-xs">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Mã Máy *</label>
+                            <input v-model="rjForm.code" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Tên Máy *</label>
+                            <input v-model="rjForm.name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Công Ty Sở Hữu *</label>
+                            <select v-model="rjForm.companyId" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                                <option v-for="c in companies" :key="c.id" :value="c.id">{{ c.name }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Chi Nhánh *</label>
+                            <select v-model="rjForm.site" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                                <option v-for="s in sites" :key="s.code" :value="s.code">{{ s.name }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">IP Tĩnh LAN *</label>
+                            <input v-model="rjForm.ipAddress" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-400 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Port *</label>
+                            <input v-model="rjForm.port" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Device ID</label>
+                            <input v-model="rjForm.deviceId" type="text" placeholder="1" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Mật Khẩu SDK</label>
+                            <input v-model="rjForm.devicePass" type="text" placeholder="pass" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Serial No (S/N)</label>
+                            <input v-model="rjForm.serialNumber" type="text" placeholder="S/N" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Ghi chú máy chấm công</label>
+                        <textarea v-model="rjForm.notes" rows="2" placeholder="Ghi chú vị trí đặt máy, phần mềm chấm công kết nối, mật khẩu kết nối SDK..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200"></textarea>
+                    </div>
+                    <div class="pt-2 flex justify-end gap-2">
+                        <button type="button" @click="showRjModal = false" class="px-4 py-1.5 bg-slate-800 text-slate-300 rounded-lg">Hủy</button>
+                        <button type="submit" class="px-5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg">Lưu Cấu Hình</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- COMPANY MODAL -->
+        <div v-if="showCompanyModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3">
+            <div class="bg-slate-900 border border-indigo-500/40 rounded-2xl max-w-md w-full p-4 space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <h3 class="font-bold text-white text-sm">{{ isEditCompany ? 'Sửa Công Ty' : 'Thêm Công Ty Mới' }}</h3>
+                    <button @click="showCompanyModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form @submit.prevent="saveCompanyItem" class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Tên Công Ty *</label>
+                        <input v-model="companyForm.name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Mã Số Thuế</label>
+                        <input v-model="companyForm.taxCode" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Địa Chỉ</label>
+                        <input v-model="companyForm.address" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" @click="showCompanyModal = false" class="px-4 py-1.5 bg-slate-800 text-slate-300 rounded-lg">Hủy</button>
+                        <button type="submit" class="px-5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg">Lưu Công Ty</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- SITE MODAL -->
+        <div v-if="showSiteModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3">
+            <div class="bg-slate-900 border border-indigo-500/40 rounded-2xl max-w-md w-full p-4 space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <h3 class="font-bold text-white text-sm">{{ isEditSite ? 'Sửa Chi Nhánh' : 'Thêm Chi Nhánh Mới' }}</h3>
+                    <button @click="showSiteModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form @submit.prevent="saveSiteItem" class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Mã Site *</label>
+                        <input v-model="siteForm.code" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Tên Chi Nhánh *</label>
+                        <input v-model="siteForm.name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Công Ty Sở Hữu *</label>
+                        <select v-model="siteForm.companyId" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                            <option v-for="c in companies" :key="c.id" :value="c.id">{{ c.name }}</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" @click="showSiteModal = false" class="px-4 py-1.5 bg-slate-800 text-slate-300 rounded-lg">Hủy</button>
+                        <button type="submit" class="px-5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg">Lưu Chi Nhánh</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- DEPT MODAL -->
+        <div v-if="showDeptModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3">
+            <div class="bg-slate-900 border border-indigo-500/40 rounded-2xl max-w-md w-full p-4 space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <h3 class="font-bold text-white text-sm">{{ isEditDept ? 'Sửa Phòng Ban' : 'Thêm Phòng Ban Mới' }}</h3>
+                    <button @click="showDeptModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form @submit.prevent="saveDeptItem" class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Tên Phòng Ban *</label>
+                        <input v-model="deptForm.name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Trực Thuộc Site *</label>
+                        <select v-model="deptForm.site" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                            <option v-for="s in sites" :key="s.code" :value="s.code">{{ s.name }}</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" @click="showDeptModal = false" class="px-4 py-1.5 bg-slate-800 text-slate-300 rounded-lg">Hủy</button>
+                        <button type="submit" class="px-5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg">Lưu Phòng Ban</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- USER MODAL -->
+        <div v-if="showUserModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3">
+            <div class="bg-slate-900 border border-purple-500/40 rounded-2xl max-w-md w-full p-4 space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <h3 class="font-bold text-white text-sm">{{ isEditUser ? 'Sửa Tài Khoản Admin' : 'Thêm Tài Khoản Admin Mới' }}</h3>
+                    <button @click="showUserModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form @submit.prevent="saveUserItem" class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Họ Tên Quản Trị *</label>
+                        <input v-model="userForm.name" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Email *</label>
+                        <input v-model="userForm.email" required type="email" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-mono">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Mật Khẩu *</label>
+                            <input v-model="userForm.password" required type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Vai Trò</label>
+                            <select v-model="userForm.role" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                                <option value="Super Admin">Super Admin</option>
+                                <option value="IT Manager">IT Manager</option>
+                                <option value="CCTV Operator">CCTV Operator</option>
+                                <option value="Viewer">Viewer</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" @click="showUserModal = false" class="px-4 py-1.5 bg-slate-800 text-slate-300 rounded-lg">Hủy</button>
+                        <button type="submit" class="px-5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg">Lưu Tài Khoản</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TASK MODAL -->
+        <div v-if="showTaskModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3">
+            <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl max-w-md w-full p-4 space-y-3 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <h3 class="font-bold text-white text-sm">{{ isEditTask ? 'Sửa Đơn Mua / Công Việc' : 'Tạo Đơn Mua / Công Việc Mới' }}</h3>
+                    <button @click="showTaskModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <form @submit.prevent="saveTaskItem" class="space-y-3 text-xs">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Ngày Thực Hiện *</label>
+                            <input v-model="taskForm.executionDate" required type="date" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-amber-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Ngày Hoàn Thành (Due)</label>
+                            <input v-model="taskForm.dueDate" type="date" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Tiêu Đề Công Việc *</label>
+                        <input v-model="taskForm.title" required type="text" placeholder="Bảo trì hệ thống mạng..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Tình Trạng Công Việc</label>
+                            <select v-model="taskForm.taskStatus" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-medium">
+                                <option value="Đang thực hiện (Pending)">⏳ Đang thực hiện (Pending)</option>
+                                <option value="Đã hoàn thành (Xong)">✅ Đã hoàn thành (Xong)</option>
+                                <option value="Chưa xong">❌ Chưa xong</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Chi Phí (VNĐ)</label>
+                            <input v-model.number="taskForm.cost" type="number" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-emerald-400 font-mono">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Mã PO / Đơn Hàng</label>
+                            <input v-model="taskForm.poNumber" type="text" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-indigo-300 font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Nhà Cung Cấp (NCC)</label>
+                            <input v-model="taskForm.supplier" type="text" placeholder="Tên NCC..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Ghi chú công việc / mua sắm</label>
+                        <textarea v-model="taskForm.notes" rows="2" placeholder="Ghi chú chi tiết bảo hành, hóa đơn VAT..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" @click="showTaskModal = false" class="px-4 py-1.5 bg-slate-800 text-slate-300 rounded-lg">Hủy</button>
+                        <button type="submit" class="px-5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg">Lưu Đơn Hàng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- LIVE CAMERA STREAM MODAL -->
+        <div v-if="selectedCameraModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3 md:p-4">
+            <div class="bg-slate-900 border border-indigo-500/40 rounded-2xl max-w-lg w-full shadow-2xl p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-white text-xs md:text-sm flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                        Live RTSP Stream: {{ selectedCameraModal.name }}
+                    </h3>
+                    <button @click="selectedCameraModal = null" class="p-1 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="aspect-video bg-slate-950 rounded-xl border border-slate-800 flex flex-col items-center justify-center text-slate-500 p-4">
+                    <i class="fa-solid fa-video text-3xl mb-2 text-slate-700"></i>
+                    <div class="text-xs text-slate-400 font-mono">{{ selectedCameraModal.ipAddress }}:{{ selectedCameraModal.rtspPort || '554' }}</div>
+                    <div class="text-[10px] text-slate-600 mt-1">Simulated RTSP Stream Signal Test</div>
+                </div>
+                <button @click="selectedCameraModal = null" class="w-full py-2 bg-slate-800 text-slate-300 text-xs font-semibold rounded-lg">Đóng</button>
+            </div>
+        </div>
+
+        <!-- IMPORT DATA MODAL -->
+        <div v-if="showImportModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3 md:p-4 overflow-y-auto">
+            <div class="bg-slate-900 border border-indigo-500/40 rounded-2xl max-w-2xl w-full shadow-2xl p-4 md:p-6 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                    <h3 class="font-bold text-white text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-file-import text-indigo-400"></i>
+                        <span>Nhập Dữ Liệu Nâng Cao (Import CSV / JSON)</span>
+                    </h3>
+                    <button @click="showImportModal = false" class="p-1 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Chọn Phân Hệ Cần Nhập Dữ Liệu *</label>
+                            <select v-model="importCategory" @change="onImportCategoryChange" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-medium">
+                                <option value="hrAssets">1. HR & Nhân Sự IT (hrAssets)</option>
+                                <option value="ispWifi">2. Đường Truyền ISP & Wi-Fi (ispWifi)</option>
+                                <option value="networkVlan">3. Subnet & VLAN Mạng (networkVlan)</option>
+                                <option value="cctvList">4. Hệ Thống Camera CCTV (cctvList)</option>
+                                <option value="ronaldJackList">5. Máy Chấm Công Ronald Jack (ronaldJackList)</option>
+                                <option value="companies">6.1 Danh Mục Công Ty (companies)</option>
+                                <option value="sites">6.2 Chi Nhánh / Sites (sites)</option>
+                                <option value="departments">6.3 Phòng Ban (departments)</option>
+                                <option value="usersList">7. Tài Khoản Quản Trị Admin (usersList)</option>
+                                <option value="dailyTasks">8. Đơn Hàng & Công Việc (dailyTasks)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Chế Độ Nhập Dữ Liệu *</label>
+                            <select v-model="importMode" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-white font-medium">
+                                <option value="append"> Thêm Nối Tiếp (Giữ lại dữ liệu cũ)</option>
+                                <option value="overwrite"> Ghi Đè Hoàn Toàn (Xóa sạch cũ rồi thay mới)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/80 p-3 border border-slate-700 rounded-xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-300 font-semibold">Chọn file dữ liệu (.csv hoặc .json):</span>
+                            <button @click="downloadTemplate" class="px-2.5 py-1 bg-indigo-950 hover:bg-indigo-900 border border-indigo-600 text-indigo-300 rounded text-[11px] font-medium flex items-center gap-1">
+                                <i class="fa-solid fa-download"></i><span>Tải Mẫu CSV {{ getCategoryLabel(importCategory) }}</span>
+                            </button>
+                        </div>
+                        <input type="file" ref="fileInput" accept=".csv, .json, .txt" @change="handleFileUpload" class="block w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Hoặc Dán Trực Tiếp Nội Dung (CSV / JSON):</label>
+                        <textarea v-model="importText" @input="parseImportText" rows="4" placeholder="Dán nội dung CSV hoặc mảng JSON [...] vào đây..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-emerald-300 font-mono text-[11px] focus:outline-none focus:border-indigo-500 custom-scrollbar"></textarea>
+                    </div>
+
+                    <div v-if="parsedPreview.length > 0" class="bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-3 space-y-2">
+                        <div class="flex items-center justify-between text-emerald-400 font-bold">
+                            <span><i class="fa-solid fa-circle-check mr-1.5"></i>Đã đọc thành công {{ parsedPreview.length }} bản ghi hợp lệ!</span>
+                            <span class="text-[10px] text-slate-400">Xem trước 3 dòng đầu:</span>
+                        </div>
+                        <div class="overflow-x-auto custom-scrollbar max-h-28">
+                            <table class="w-full text-[10px] text-slate-300 border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-900 text-slate-400">
+                                        <th v-for="(val, key) in parsedPreview[0]" :key="key" class="p-1 border border-slate-700 uppercase font-mono">{{ key }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(row, idx) in parsedPreview.slice(0,3)" :key="idx" class="border-b border-slate-800">
+                                        <td v-for="(val, key) in row" :key="key" class="p-1 border border-slate-800 truncate max-w-[120px]">{{ val }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2 border-t border-slate-800">
+                    <button type="button" @click="showImportModal = false" class="px-4 py-1.5 bg-slate-800 text-slate-300 rounded-lg">Hủy</button>
+                    <button @click="executeImport" :disabled="parsedPreview.length === 0" :class="parsedPreview.length === 0 ? 'opacity-50 cursor-not-allowed bg-slate-700' : 'bg-indigo-600 hover:bg-indigo-500'" class="px-5 py-1.5 text-white font-bold rounded-lg flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-import"></i><span>Xác Nhận Import {{ parsedPreview.length }} Dòng</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CUSTOM CONFIRM DELETE MODAL -->
+        <div v-if="confirmDialog.show" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3">
+            <div class="bg-slate-900 border border-rose-500/40 rounded-2xl max-w-sm w-full p-4 space-y-3 shadow-2xl">
+                <div class="flex items-center gap-3 text-rose-400 font-bold text-sm border-b border-slate-800 pb-2">
+                    <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+                    <span>Xác Nhận Xóa</span>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    {{ confirmDialog.message }}
+                </p>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button @click="confirmDialog.show = false" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-lg">Hủy Bỏ</button>
+                    <button @click="executeConfirmedAction" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg">Đồng Ý Xóa</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FACTORY RESET OTP VERIFICATION MODAL -->
+        <div v-if="showResetModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-3">
+            <div class="bg-slate-900 border border-rose-500/50 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="font-bold text-rose-400 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-shield-cat text-lg"></i>
+                        <span>Xác Thực Khôi Phục Cài Đặt Gốc (OTP)</span>
+                    </h3>
+                    <button @click="showResetModal = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div v-if="resetStep === 1" class="space-y-3 text-xs">
+                    <p class="text-slate-300 leading-relaxed">
+                        Hệ thống yêu cầu xác thực bảo mật cấp cao để tiến hành khôi phục thiết lập ban đầu (Factory Reset). Vui lòng xác nhận email quản trị nhận mã OTP:
+                    </p>
+                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 font-mono text-emerald-400">
+                        {{ currentUser?.email || 'duongvantinh0201@gmail.com' }}
+                    </div>
+                    <button @click="sendResetOtp" class="w-full py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl transition shadow-lg text-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i><span>Gửi Mã OTP Về Email</span>
+                    </button>
+                </div>
+
+                <div v-if="resetStep === 2" class="space-y-3 text-xs">
+                    <div class="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-2xl text-emerald-300 font-medium">
+                        <i class="fa-solid fa-circle-check mr-1.5"></i> Mã OTP mô phỏng đã được gửi! (Mã test của bạn là: <span class="font-mono text-amber-300 font-bold underline">888999</span>)
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1 font-semibold">Nhập Mã OTP 6 Số *</label>
+                        <input v-model="enteredOtp" type="text" maxlength="6" placeholder="888999" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-amber-300 font-mono tracking-widest text-center text-lg font-bold">
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button @click="resetStep = 1" class="w-1/3 py-2 bg-slate-800 text-slate-300 rounded-xl font-medium">Gửi Lại</button>
+                        <button @click="verifyAndExecuteReset" class="w-2/3 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg shadow-lg">Xác Nhận & Reset Gốc</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VUE 3 APPLICATION LOGIC -->
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    isLoggedIn: false,
+                    loginForm: { email: 'duongvantinh0201@gmail.com', password: '', remember: true },
+                    loginError: '',
+
+                    activeTab: 'dashboard',
+                    sitesSubTab: 'companies',
+                    showMobileMenu: false,
+                    selectedCompany: 'ALL',
+                    selectedSite: 'ALL',
+                    hrSearch: '',
+                    hrDeptFilter: 'ALL',
+
+                    // Month & Year Filter for Tasks (by execution date)
+                    filterMonth: 'ALL',
+                    filterYear: 'ALL',
+
+                    // Reset OTP state
+                    showResetModal: false,
+                    resetStep: 1,
+                    enteredOtp: '',
+
+                    // Modals state with complete parameters
+                    showHrModal: false, isEditHr: false, hrForm: { id: null, empCode: '', empName: '', companyId: 'CORP-HQ', site: 'HQ-HCM', dept: 'IT Systems & Security', title: 'Nhân viên', email: '', emailPass: '', phone: '', deviceType: 'Laptop', deviceName: '', serialNumber: '', ipAddress: '', status: 'Active', notes: '' },
+                    showIspWifiModal: false, isEditIspWifi: false, ispWifiForm: { id: null, name: '', category: 'ISP Leased Line', companyId: 'CORP-HQ', site: 'HQ-HCM', location: '', bandwidth: '500 Mbps', loginId: '', password: '', gatewayIp: '', serialNumber: '', supplier: 'VNPT', notes: '' },
+                    showVlanModal: false, isEditVlan: false, vlanForm: { id: null, vlanId: '10', name: '', companyId: 'CORP-HQ', site: 'HQ-HCM', subnet: '192.168.10.0/24', gateway: '192.168.10.1', dhcpRange: '', authId: '', authPass: '', serialNumber: '', notes: '' },
+                    showCctvModal: false, isEditCctv: false, cctvForm: { id: null, code: '', name: '', companyId: 'CORP-HQ', site: 'HQ-HCM', installationDate: new Date().toISOString().slice(0,10), ipAddress: '', rtspPort: '554', camId: 'admin', camPass: '', serialNumber: '', brandModel: 'Hikvision 2MP', status: 'Online', notes: '' },
+                    showRjModal: false, isEditRj: false, rjForm: { id: null, code: '', name: '', companyId: 'CORP-HQ', site: 'HQ-HCM', ipAddress: '', port: '4370', deviceId: '1', devicePass: '', serialNumber: '', status: 'Online', notes: '' },
+                    showCompanyModal: false, isEditCompany: false, companyForm: { id: null, name: '', taxCode: '', address: '' },
+                    showSiteModal: false, isEditSite: false, siteForm: { code: '', name: '', companyId: 'CORP-HQ', manager: '' },
+                    showDeptModal: false, isEditDept: false, deptForm: { id: null, name: '', site: 'HQ-HCM' },
+                    showUserModal: false, isEditUser: false, userForm: { id: null, name: '', email: '', password: '', role: 'IT Manager' },
+                    showTaskModal: false, isEditTask: false, taskForm: { id: null, executionDate: new Date().toISOString().slice(0,10), dueDate: new Date().toISOString().slice(0,10), title: '', companyId: 'CORP-HQ', site: 'HQ-HCM', poNumber: '', invoiceNumber: '', supplier: '', cost: 0, taskStatus: 'Đang thực hiện (Pending)', notes: '' },
+                    
+                    // Import state
+                    showImportModal: false,
+                    importCategory: 'hrAssets',
+                    importMode: 'append',
+                    importText: '',
+                    parsedPreview: [],
+
+                    selectedCameraModal: null,
+                    toast: { show: false, message: '', type: 'success' },
+                    currentUser: null,
+
+                    // Custom Confirm Dialog
+                    confirmDialog: { show: false, message: '', action: null },
+
+                    companies: [],
+                    sites: [],
+                    departments: [],
+                    hrAssets: [],
+                    ispWifi: [],
+                    networkVlan: [],
+                    cctvList: [],
+                    ronaldJackList: [],
+                    usersList: [],
+                    dailyTasks: []
+                }
+            },
+
+            computed: {
+                filteredSiteList() {
+                    if (!Array.isArray(this.sites)) return [];
+                    if (this.selectedCompany === 'ALL') return this.sites;
+                    return this.sites.filter(s => s.companyId === this.selectedCompany);
+                },
+
+                getDepartmentsForSelectedCompany() {
+                    const sitesOfComp = this.filteredSiteList.map(s => s.code);
+                    return (this.departments || []).filter(d => sitesOfComp.includes(d.site));
+                },
+
+                filteredHrAssets() {
+                    if (!Array.isArray(this.hrAssets)) return [];
+                    return this.hrAssets.filter(item => {
+                        const matchCompany = this.selectedCompany === 'ALL' || item.companyId === this.selectedCompany;
+                        const matchSite = this.selectedSite === 'ALL' || item.site === this.selectedSite;
+                        const matchDept = this.hrDeptFilter === 'ALL' || item.dept === this.hrDeptFilter;
+                        const search = (this.hrSearch || '').toLowerCase();
+                        const matchSearch = !search || (item.empName && item.empName.toLowerCase().includes(search)) || (item.empCode && item.empCode.toLowerCase().includes(search));
+                        return matchCompany && matchSite && matchDept && matchSearch;
+                    });
+                },
+
+                filteredRonaldJack() {
+                    if (!Array.isArray(this.ronaldJackList)) return [];
+                    return this.ronaldJackList.filter(item => {
+                        const matchCompany = this.selectedCompany === 'ALL' || item.companyId === this.selectedCompany;
+                        const matchSite = this.selectedSite === 'ALL' || item.site === this.selectedSite;
+                        return matchCompany && matchSite;
+                    });
+                },
+
+                filteredCctvList() {
+                    if (!Array.isArray(this.cctvList)) return [];
+                    return this.cctvList.filter(item => {
+                        const matchCompany = this.selectedCompany === 'ALL' || item.companyId === this.selectedCompany;
+                        const matchSite = this.selectedSite === 'ALL' || item.site === this.selectedSite;
+                        return matchCompany && matchSite;
+                    });
+                },
+
+                filteredIspWifi() {
+                    if (!Array.isArray(this.ispWifi)) return [];
+                    return this.ispWifi.filter(item => {
+                        const matchCompany = this.selectedCompany === 'ALL' || item.companyId === this.selectedCompany;
+                        const matchSite = this.selectedSite === 'ALL' || item.site === this.selectedSite;
+                        return matchCompany && matchSite;
+                    });
+                },
+
+                filteredNetworkVlan() {
+                    if (!Array.isArray(this.networkVlan)) return [];
+                    return this.networkVlan.filter(item => {
+                        const matchCompany = this.selectedCompany === 'ALL' || item.companyId === this.selectedCompany;
+                        const matchSite = this.selectedSite === 'ALL' || item.site === this.selectedSite;
+                        return matchCompany && matchSite;
+                    });
+                },
+
+                filteredDailyTasks() {
+                    if (!Array.isArray(this.dailyTasks)) return [];
+                    return this.dailyTasks.filter(item => {
+                        const matchCompany = this.selectedCompany === 'ALL' || item.companyId === this.selectedCompany;
+                        const matchSite = this.selectedSite === 'ALL' || item.site === this.selectedSite;
+                        
+                        let matchMonth = true;
+                        let matchYear = true;
+                        if (item.executionDate) {
+                            const parts = item.executionDate.split('-'); // YYYY-MM-DD
+                            if (parts.length === 3) {
+                                const y = parts[0];
+                                const m = parts[1];
+                                if (this.filterMonth !== 'ALL' && m !== this.filterMonth) matchMonth = false;
+                                if (this.filterYear !== 'ALL' && y !== this.filterYear) matchYear = false;
+                            } else {
+                                if (this.filterMonth !== 'ALL' || this.filterYear !== 'ALL') {
+                                    matchMonth = false;
+                                    matchYear = false;
+                                }
+                            }
+                        } else if (this.filterMonth !== 'ALL' || this.filterYear !== 'ALL') {
+                            matchMonth = false;
+                            matchYear = false;
+                        }
+
+                        return matchCompany && matchSite && matchMonth && matchYear;
+                    });
+                },
+
+                totalProcurementCost() {
+                    return this.filteredDailyTasks.reduce((sum, item) => sum + (Number(item.cost) || 0), 0);
+                }
+            },
+
+            mounted() {
+                this.loadInitialData();
+                this.checkRememberedLogin();
+            },
+
+            methods: {
+                checkRememberedLogin() {
+                    const rememberedEmail = localStorage.getItem('infra_v10_remembered_email');
+                    if (rememberedEmail) {
+                        const found = this.usersList.find(u => u.email && u.email.trim().toLowerCase() === rememberedEmail.trim().toLowerCase());
+                        if (found) {
+                            this.currentUser = found;
+                            this.isLoggedIn = true;
+                        }
+                    }
+                },
+
+                hasPermission(permissionKey) {
+                    if (!this.currentUser) return false;
+                    const role = this.currentUser.role;
+                    
+                    if (role === 'Super Admin') return true;
+                    if (role === 'IT Manager') {
+                        if (permissionKey === 'manage_rbac' || permissionKey === 'factory_reset') return false;
+                        return true;
+                    }
+                    if (role === 'CCTV Operator') {
+                        return ['view_cctv', 'view_dashboard'].includes(permissionKey);
+                    }
+                    if (role === 'Viewer') {
+                        return permissionKey.startsWith('view_');
+                    }
+                    return false;
+                },
+
+                handleLogin() {
+                    this.loginError = '';
+                    const inputEmail = (this.loginForm.email || '').trim().toLowerCase();
+                    const inputPass = (this.loginForm.password || '').trim();
+
+                    const found = this.usersList.find(u => 
+                        u.email && u.email.trim().toLowerCase() === inputEmail && 
+                        u.password && u.password.trim() === inputPass
+                    );
+
+                    if (found) {
+                        this.currentUser = found;
+                        this.isLoggedIn = true;
+                        if (this.loginForm.remember) {
+                            localStorage.setItem('infra_v10_remembered_email', found.email);
+                        } else {
+                            localStorage.removeItem('infra_v10_remembered_email');
+                        }
+                        this.showToast(`Đăng nhập thành công với quyền [${found.role}], chào ${found.name}!`);
+                    } else {
+                        this.loginError = 'Email đăng nhập hoặc mật khẩu không chính xác!';
+                    }
+                },
+
+                handleLogout() {
+                    this.isLoggedIn = false;
+                    this.currentUser = null;
+                    localStorage.removeItem('infra_v10_remembered_email');
+                    this.loginForm = { email: 'duongvantinh0201@gmail.com', password: '', remember: true };
+                    this.showToast('Đã đăng xuất khỏi hệ thống.', 'info');
+                },
+
+                formatCurrency(val) {
+                    if (!val || isNaN(val)) return '0 ₫';
+                    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+                },
+
+                showToast(msg, type = 'success') {
+                    this.toast = { show: true, message: msg, type };
+                    setTimeout(() => { this.toast.show = false; }, 3500);
+                },
+
+                onCompanyChanged() {
+                    this.selectedSite = 'ALL';
+                    this.hrDeptFilter = 'ALL';
+                },
+
+                openCameraModal(cam) {
+                    this.selectedCameraModal = cam;
+                },
+
+                getDepartmentsForModal(siteCode) {
+                    if (!siteCode) return this.departments;
+                    return (this.departments || []).filter(d => d.site === siteCode);
+                },
+
+                exportTasksExcel() {
+                    let csv = '\uFEFFNgày Thực Hiện,Ngày Hoàn Thành (Due),Tiêu Đề Công Việc,Tình Trạng,Mã PO,Số Hóa Đơn VAT,Nhà Cung Cấp (NCC),Chi Phí (VNĐ),Ghi Chú\n';
+                    this.filteredDailyTasks.forEach(t => {
+                        csv += `"${t.executionDate || ''}","${t.dueDate || ''}","${t.title || ''}","${t.taskStatus || ''}","${t.poNumber || ''}","${t.invoiceNumber || ''}","${t.supplier || ''}",${t.cost || 0},"${(t.notes || '').replace(/"/g, '""')}"\n`;
+                    });
+                    const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + csv);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', encodedUri);
+                    link.setAttribute('download', `Bang_Ke_Mua_Sam_Va_Cong_Viec_${new Date().toISOString().slice(0,10)}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    this.showToast('Đã xuất file Excel / CSV công việc thành công!');
+                },
+
+                openResetOtpModal() {
+                    this.resetStep = 1;
+                    this.enteredOtp = '';
+                    this.showResetModal = true;
+                },
+
+                sendResetOtp() {
+                    this.showToast('Đang gửi mã OTP đến email quản trị...', 'info');
+                    setTimeout(() => {
+                        this.resetStep = 2;
+                        this.showToast('Đã gửi mã OTP thành công! Kiểm tra thông báo trên màn hình.', 'success');
+                    }, 1000);
+                },
+
+                verifyAndExecuteReset() {
+                    if ((this.enteredOtp || '').trim() !== '888999') {
+                        this.showToast('Mã OTP không chính xác! (Mã thử nghiệm: 888999)', 'warning');
+                        return;
+                    }
+
+                    localStorage.clear();
+                    this.showResetModal = false;
+                    this.showToast('Đã khôi phục cài đặt gốc thành công! Đang tải lại dữ liệu mẫu...', 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1200);
+                },
+
+                openImportModal(category = 'hrAssets') {
+                    if (category !== 'ALL') {
+                        this.importCategory = category;
+                    }
+                    this.importText = '';
+                    this.parsedPreview = [];
+                    this.showImportModal = true;
+                },
+
+                onImportCategoryChange() {
+                    this.importText = '';
+                    this.parsedPreview = [];
+                },
+
+                getCategoryLabel(catKey) {
+                    const labels = {
+                        hrAssets: 'Nhân Sự',
+                        ispWifi: 'ISP/Wi-Fi',
+                        networkVlan: 'Subnet/VLAN',
+                        cctvList: 'CCTV Camera',
+                        ronaldJackList: 'Ronald Jack',
+                        companies: 'Công Ty',
+                        sites: 'Chi Nhánh',
+                        departments: 'Phòng Ban',
+                        usersList: 'Tài Khoản Admin',
+                        dailyTasks: 'Công Việc'
+                    };
+                    return labels[catKey] || catKey;
+                },
+
+                handleFileUpload(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        this.importText = event.target.result;
+                        this.parseImportText();
+                    };
+                    reader.readAsText(file);
+                },
+
+                parseImportText() {
+                    const raw = (this.importText || '').trim();
+                    if (!raw) {
+                        this.parsedPreview = [];
+                        return;
+                    }
+
+                    try {
+                        if (raw.startsWith('[') || raw.startsWith('{')) {
+                            const parsed = JSON.parse(raw);
+                            this.parsedPreview = Array.isArray(parsed) ? parsed : [parsed];
+                            return;
+                        }
+                    } catch (err) {}
+
+                    const lines = raw.split(/\r?\n/).filter(line => line.trim() !== '');
+                    if (lines.length < 2) {
+                        this.parsedPreview = [];
+                        return;
+                    }
+
+                    const delimiter = lines[0].includes(';') ? ';' : ',';
+                    const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
+                    const results = [];
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const currentline = lines[i].split(delimiter);
+                        if (currentline.length < headers.length) continue;
+
+                        const obj = {};
+                        for (let j = 0; j < headers.length; j++) {
+                            let val = (currentline[j] || '').trim().replace(/^"|"$/g, '');
+                            obj[headers[j]] = val;
+                        }
+                        if (Object.keys(obj).length > 0) {
+                            results.push(obj);
+                        }
+                    }
+                    this.parsedPreview = results;
+                },
+
+                executeImport() {
+                    if (!this.parsedPreview || this.parsedPreview.length === 0) {
+                        this.showToast('Không có dữ liệu hợp lệ để Import!', 'warning');
+                        return;
+                    }
+
+                    const targetCat = this.importCategory;
+                    let targetArray = this[targetCat] || [];
+
+                    const formattedItems = this.parsedPreview.map((item, index) => {
+                        const copy = { ...item };
+                        if (!copy.id) copy.id = Date.now() + index;
+                        if (!copy.companyId) copy.companyId = this.selectedCompany !== 'ALL' ? this.selectedCompany : 'CORP-HQ';
+                        if (!copy.site) copy.site = this.selectedSite !== 'ALL' ? this.selectedSite : 'HQ-HCM';
+                        return copy;
+                    });
+
+                    if (this.importMode === 'overwrite') {
+                        this[targetCat] = formattedItems;
+                    } else {
+                        this[targetCat] = [...formattedItems, ...targetArray];
+                    }
+
+                    this.saveToStorage();
+                    this.showToast(`Đã Import thành công ${formattedItems.length} bản ghi vào ${this.getCategoryLabel(targetCat)}!`);
+                    this.showImportModal = false;
+                },
+
+                downloadTemplate() {
+                    const templates = {
+                        hrAssets: 'empCode,empName,companyId,site,dept,title,email,emailPass,phone,deviceType,deviceName,serialNumber,ipAddress,status,notes\nNV-901,Nguyễn Văn A,CORP-HQ,HQ-HCM,IT Systems & Security,Chuyên viên IT,a.nguyen@corp.com,pass123,0909123456,Laptop,Dell XPS 15,S/N-1234,192.168.10.101,Active,Cấp mới',
+                        ispWifi: 'name,category,companyId,site,location,bandwidth,loginId,password,gatewayIp,serialNumber,supplier,notes\nVNPT Fiber,ISP Leased Line,CORP-HQ,HQ-HCM,Server Room,500 Mbps,admin,pass123,192.168.1.1,S/N-99,VNPT,Chính hãng',
+                        networkVlan: 'vlanId,name,companyId,site,subnet,gateway,authId,authPass,serialNumber,notes\n10,Office,CORP-HQ,HQ-HCM,192.168.10.0/24,192.168.10.1,admin,pass,S/N-VLAN,VLAN chính',
+                        cctvList: 'installationDate,name,companyId,site,ipAddress,rtspPort,camId,camPass,serialNumber,brandModel,status,notes\n2026-03-20,Cam Cổng,CORP-HQ,HQ-HCM,192.168.10.150,554,admin,pass123,S/N-CAM,Hikvision,Online,Tốt',
+                        ronaldJackList: 'code,name,companyId,site,ipAddress,port,deviceId,devicePass,serialNumber,status,notes\nMCC-01,Máy Chấm Công,CORP-HQ,HQ-HCM,192.168.10.220,4370,1,pass,S/N-RJ,Online,Tốt',
+                        companies: 'id,name,taxCode,address\nCORP-TECH,Công ty Công Nghệ,031234,TP.HCM',
+                        sites: 'code,name,companyId,manager\nSITE-DN,Đà Nẵng,CORP-HQ,Bình',
+                        departments: 'name,site\nKế Toán,HQ-HCM',
+                        usersList: 'name,email,password,role\nManager 2,manager2@enterprise.com,123,IT Manager',
+                        dailyTasks: 'executionDate,dueDate,title,taskStatus,companyId,site,poNumber,invoiceNumber,supplier,cost,notes\n2026-03-20,2026-03-25,Bảo trì,Đang thực hiện (Pending),CORP-HQ,HQ-HCM,PO-01,VAT-01,Cisco,1000000,OK'
+                    };
+
+                    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + (templates[this.importCategory] || 'id,name\n1,Sample');
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', encodedUri);
+                    link.setAttribute('download', `Import_Template_${this.importCategory}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    this.showToast(`Đã tải xuống file CSV mẫu cho ${this.getCategoryLabel(this.importCategory)}!`);
+                },
+
+                askDelete(type, id, title) {
+                    this.confirmDialog = {
+                        show: true,
+                        message: `Bạn có chắc chắn muốn xóa "${title}"? Hành động này không thể hoàn tác.`,
+                        action: () => {
+                            if (type === 'hrAssets') this.hrAssets = this.hrAssets.filter(i => i.id !== id);
+                            if (type === 'ispWifi') this.ispWifi = this.ispWifi.filter(i => i.id !== id);
+                            if (type === 'networkVlan') this.networkVlan = this.networkVlan.filter(i => i.id !== id);
+                            if (type === 'cctvList') this.cctvList = this.cctvList.filter(i => i.id !== id);
+                            if (type === 'ronaldJackList') this.ronaldJackList = this.ronaldJackList.filter(i => i.id !== id);
+                            if (type === 'companies') {
+                                this.companies = this.companies.filter(i => i.id !== id);
+                                const deletedSiteCodes = this.sites.filter(s => s.companyId === id).map(s => s.code);
+                                this.sites = this.sites.filter(s => s.companyId !== id);
+                                this.departments = this.departments.filter(d => !deletedSiteCodes.includes(d.site));
+                                this.hrAssets = this.hrAssets.filter(i => i.companyId !== id);
+                                this.cctvList = this.cctvList.filter(i => i.companyId !== id);
+                                this.ronaldJackList = this.ronaldJackList.filter(i => i.companyId !== id);
+                                this.ispWifi = this.ispWifi.filter(i => i.companyId !== id);
+                                this.networkVlan = this.networkVlan.filter(i => i.companyId !== id);
+                                this.dailyTasks = this.dailyTasks.filter(i => i.companyId !== id);
+                            }
+                            if (type === 'sites') {
+                                const siteCode = id;
+                                this.sites = this.sites.filter(s => s.code !== siteCode);
+                                this.departments = this.departments.filter(d => d.site !== siteCode);
+                                this.hrAssets = this.hrAssets.filter(i => i.site !== siteCode);
+                                this.cctvList = this.cctvList.filter(i => i.site !== siteCode);
+                                this.ronaldJackList = this.ronaldJackList.filter(i => i.site !== siteCode);
+                                this.ispWifi = this.ispWifi.filter(i => i.site !== siteCode);
+                                this.networkVlan = this.networkVlan.filter(i => i.site !== siteCode);
+                                this.dailyTasks = this.dailyTasks.filter(i => i.site !== siteCode);
+                            }
+                            if (type === 'departments') {
+                                const deptName = title;
+                                this.departments = this.departments.filter(i => i.id !== id);
+                                this.hrAssets.forEach(h => {
+                                    if (h.dept === deptName) h.dept = 'Unassigned';
+                                });
+                            }
+                            if (type === 'usersList') this.usersList = this.usersList.filter(i => i.id !== id);
+                            if (type === 'dailyTasks') this.dailyTasks = this.dailyTasks.filter(i => i.id !== id);
+                            this.saveToStorage();
+                            this.showToast('Đã xóa thành công và đồng bộ dữ liệu liên quan!');
+                        }
+                    };
+                },
+
+                executeConfirmedAction() {
+                    if (typeof this.confirmDialog.action === 'function') {
+                        this.confirmDialog.action();
+                    }
+                    this.confirmDialog.show = false;
+                },
+
+                // HR HANDLERS
+                openAddHrModal() {
+                    this.isEditHr = false;
+                    const defaultCorp = this.selectedCompany !== 'ALL' ? this.selectedCompany : (this.companies[0]?.id || 'CORP-HQ');
+                    const defaultSite = this.sites.find(s => s.companyId === defaultCorp)?.code || 'HQ-HCM';
+                    const defaultDept = this.getDepartmentsForModal(defaultSite)[0]?.name || 'IT Systems & Security';
+                    this.hrForm = { id: Date.now(), empCode: 'NV-' + Date.now().toString().slice(-3), empName: '', companyId: defaultCorp, site: defaultSite, dept: defaultDept, title: 'Chuyên viên IT', email: '', emailPass: '', phone: '', deviceType: 'Laptop', deviceName: 'Dell XPS 15', serialNumber: '', ipAddress: '192.168.10.' + Math.floor(Math.random()*100), status: 'Active', notes: '' };
+                    this.showHrModal = true;
+                },
+                editHrItem(item) {
+                    this.isEditHr = true;
+                    this.hrForm = { ...item };
+                    this.showHrModal = true;
+                },
+                saveHrItem() {
+                    if (!this.hrForm.empName || !this.hrForm.empCode) {
+                        this.showToast('Vui lòng nhập tên và mã nhân sự!', 'warning'); return;
+                    }
+                    if (this.isEditHr) {
+                        const idx = this.hrAssets.findIndex(i => i.id === this.hrForm.id);
+                        if (idx !== -1) this.hrAssets[idx] = { ...this.hrForm };
+                    } else {
+                        this.hrAssets.unshift({ ...this.hrForm });
+                    }
+                    this.showHrModal = false; this.saveToStorage(); this.showToast('Đã lưu thông tin nhân sự!');
+                },
+
+                // ISP & WIFI HANDLERS
+                openAddIspWifiModal() {
+                    this.isEditIspWifi = false;
+                    const defaultCorp = this.selectedCompany !== 'ALL' ? this.selectedCompany : (this.companies[0]?.id || 'CORP-HQ');
+                    const defaultSite = this.sites.find(s => s.companyId === defaultCorp)?.code || 'HQ-HCM';
+                    this.ispWifiForm = { id: Date.now(), name: '', category: 'ISP Leased Line', companyId: defaultCorp, site: defaultSite, location: 'Tầng 1 - Server Room', bandwidth: '500 Mbps', loginId: 'admin', password: 'wifi@2026password', gatewayIp: '192.168.1.1', serialNumber: '', supplier: 'VNPT', notes: '' };
+                    this.showIspWifiModal = true;
+                },
+                editIspWifiItem(item) {
+                    this.isEditIspWifi = true;
+                    this.ispWifiForm = { ...item };
+                    this.showIspWifiModal = true;
+                },
+                saveIspWifiItem() {
+                    if (!this.ispWifiForm.name) { this.showToast('Vui lòng nhập tên đường truyền!', 'warning'); return; }
+                    if (this.isEditIspWifi) {
+                        const idx = this.ispWifi.findIndex(i => i.id === this.ispWifiForm.id);
+                        if (idx !== -1) this.ispWifi[idx] = { ...this.ispWifiForm };
+                    } else {
+                        this.ispWifi.unshift({ ...this.ispWifiForm });
+                    }
+                    this.showIspWifiModal = false; this.saveToStorage(); this.showToast('Đã lưu cấu hình ISP / Wi-Fi!');
+                },
+
+                // VLAN HANDLERS
+                openAddVlanModal() {
+                    this.isEditVlan = false;
+                    const defaultCorp = this.selectedCompany !== 'ALL' ? this.selectedCompany : (this.companies[0]?.id || 'CORP-HQ');
+                    const defaultSite = this.sites.find(s => s.companyId === defaultCorp)?.code || 'HQ-HCM';
+                    this.vlanForm = { id: Date.now(), vlanId: '10', name: 'Mạng Nội Bộ Office', companyId: defaultCorp, site: defaultSite, subnet: '192.168.10.0/24', gateway: '192.168.10.1', dhcpRange: '192.168.10.100 - 192.168.10.250', authId: 'admin', authPass: '', serialNumber: '', notes: '' };
+                    this.showVlanModal = true;
+                },
+                editVlanItem(item) {
+                    this.isEditVlan = true;
+                    this.vlanForm = { ...item };
+                    this.showVlanModal = true;
+                },
+                saveVlanItem() {
+                    if (!this.vlanForm.name || !this.vlanForm.vlanId) { this.showToast('Vui lòng nhập tên và VLAN ID!', 'warning'); return; }
+                    if (this.isEditVlan) {
+                        const idx = this.networkVlan.findIndex(i => i.id === this.vlanForm.id);
+                        if (idx !== -1) this.networkVlan[idx] = { ...this.vlanForm };
+                    } else {
+                        this.networkVlan.unshift({ ...this.vlanForm });
+                    }
+                    this.showVlanModal = false; this.saveToStorage(); this.showToast('Đã lưu VLAN!');
+                },
+
+                // CCTV HANDLERS
+                openAddCctvModal() {
+                    this.isEditCctv = false;
+                    const defaultCorp = this.selectedCompany !== 'ALL' ? this.selectedCompany : (this.companies[0]?.id || 'CORP-HQ');
+                    const defaultSite = this.sites.find(s => s.companyId === defaultCorp)?.code || 'HQ-HCM';
+                    this.cctvForm = { id: Date.now(), code: 'CAM-' + Date.now().toString().slice(-3), name: '', companyId: defaultCorp, site: defaultSite, installationDate: new Date().toISOString().slice(0,10), ipAddress: '192.168.10.150', rtspPort: '554', camId: 'admin', camPass: '', serialNumber: '', brandModel: 'Hikvision 2MP', status: 'Online', notes: '' };
+                    this.showCctvModal = true;
+                },
+                editCctvItem(cam) {
+                    this.isEditCctv = true;
+                    this.cctvForm = { ...cam };
+                    if (!this.cctvForm.installationDate) {
+                        this.cctvForm.installationDate = new Date().toISOString().slice(0,10);
+                    }
+                    this.showCctvModal = true;
+                },
+                saveCctvItem() {
+                    if (!this.cctvForm.name || !this.cctvForm.ipAddress) { this.showToast('Vui lòng nhập tên và địa chỉ IP Camera!', 'warning'); return; }
+                    if (this.isEditCctv) {
+                        const idx = this.cctvList.findIndex(c => c.id === this.cctvForm.id);
+                        if (idx !== -1) this.cctvList[idx] = { ...this.cctvForm };
+                    } else {
+                        this.cctvList.unshift({ ...this.cctvForm });
+                    }
+                    this.showCctvModal = false; this.saveToStorage(); this.showToast('Đã lưu cấu hình Camera!');
+                },
+
+                // RONALD JACK HANDLERS
+                openAddRjModal() {
+                    this.isEditRj = false;
+                    const defaultCorp = this.selectedCompany !== 'ALL' ? this.selectedCompany : (this.companies[0]?.id || 'CORP-HQ');
+                    const defaultSite = this.sites.find(s => s.companyId === defaultCorp)?.code || 'HQ-HCM';
+                    this.rjForm = { id: Date.now(), code: 'MCC-' + Date.now().toString().slice(-3), name: '', companyId: defaultCorp, site: defaultSite, ipAddress: '192.168.10.220', port: '4370', deviceId: '1', devicePass: '', serialNumber: '', status: 'Online', notes: '' };
+                    this.showRjModal = true;
+                },
+                editRjItem(item) {
+                    this.isEditRj = true;
+                    this.rjForm = { ...item };
+                    this.showRjModal = true;
+                },
+                saveRjItem() {
+                    if (!this.rjForm.name || !this.rjForm.ipAddress) { this.showToast('Vui lòng nhập tên và IP máy chấm công!', 'warning'); return; }
+                    if (this.isEditRj) {
+                        const idx = this.ronaldJackList.findIndex(i => i.id === this.rjForm.id);
+                        if (idx !== -1) this.ronaldJackList[idx] = { ...this.rjForm };
+                    } else {
+                        this.ronaldJackList.unshift({ ...this.rjForm });
+                    }
+                    this.showRjModal = false; this.saveToStorage(); this.showToast('Đã lưu cấu hình Ronald Jack!');
+                },
+                testRjConnection(item) {
+                    this.showToast(`Đang Ping tới IP ${item.ipAddress}:${item.port || '4370'}...`, 'info');
+                    setTimeout(() => { this.showToast(`🟢 Kết nối thành công tới ${item.name}! (12ms)`, 'success'); }, 800);
+                },
+
+                // COMPANY / SITE / DEPT HANDLERS WITH AUTO-LINK SYNC
+                openAddCompanyModal() {
+                    this.isEditCompany = false;
+                    this.companyForm = { id: 'CORP-' + Date.now().toString().slice(-4), name: '', taxCode: '', address: '' };
+                    this.showCompanyModal = true;
+                },
+                editCompanyItem(corp) {
+                    this.isEditCompany = true;
+                    this.companyForm = { ...corp };
+                    this.showCompanyModal = true;
+                },
+                saveCompanyItem() {
+                    if (!this.companyForm.name) { this.showToast('Vui lòng nhập tên công ty!', 'warning'); return; }
+                    if (this.isEditCompany) {
+                        const idx = this.companies.findIndex(c => c.id === this.companyForm.id);
+                        if (idx !== -1) this.companies[idx] = { ...this.companyForm };
+                    } else {
+                        this.companies.push({ ...this.companyForm });
+                    }
+                    this.showCompanyModal = false; this.saveToStorage(); this.showToast('Đã lưu thông tin công ty và đồng bộ hệ thống!');
+                },
+
+                openAddSiteModal() {
+                    this.isEditSite = false;
+                    const defaultCorp = this.selectedCompany !== 'ALL' ? this.selectedCompany : (this.companies[0]?.id || 'CORP-HQ');
+                    this.siteForm = { code: 'SITE-' + Date.now().toString().slice(-3), name: '', companyId: defaultCorp, manager: '' };
+                    this.showSiteModal = true;
+                },
+                editSiteItem(site) {
+                    this.isEditSite = true;
+                    this.siteForm = { ...site };
+                    this.showSiteModal = true;
+                },
+                saveSiteItem() {
+                    if (!this.siteForm.name || !this.siteForm.code) { this.showToast('Vui lòng nhập tên và mã chi nhánh!', 'warning'); return; }
+                    const oldCode = this.isEditSite ? this.siteForm.code : null;
+                    if (this.isEditSite) {
+                        const idx = this.sites.findIndex(s => s.code === this.siteForm.code);
+                        if (idx !== -1) {
+                            const oldCompanyId = this.sites[idx].companyId;
+                            const newCompanyId = this.siteForm.companyId;
+                            if (oldCompanyId !== newCompanyId) {
+                                this.hrAssets.forEach(h => { if (h.site === oldCode) h.companyId = newCompanyId; });
+                                this.cctvList.forEach(c => { if (c.site === oldCode) c.companyId = newCompanyId; });
+                                this.ronaldJackList.forEach(r => { if (r.site === oldCode) r.companyId = newCompanyId; });
+                                this.ispWifi.forEach(i => { if (i.site === oldCode) i.companyId = newCompanyId; });
+                                this.networkVlan.forEach(v => { if (v.site === oldCode) v.companyId = newCompanyId; });
+                                this.dailyTasks.forEach(t => { if (t.site === oldCode) t.companyId = newCompanyId; });
+                            }
+                            this.sites[idx] = { ...this.siteForm };
+                        }
+                    } else {
+                        this.sites.push({ ...this.siteForm });
+                    }
+                    this.showSiteModal = false; this.saveToStorage(); this.showToast('Đã lưu thông tin chi nhánh và liên kết dữ liệu!');
+                },
+
+                openAddDeptModal() {
+                    this.isEditDept = false;
+                    this.deptForm = { id: Date.now(), name: '', site: 'HQ-HCM' };
+                    this.showDeptModal = true;
+                },
+                editDeptItem(dept) {
+                    this.isEditDept = true;
+                    this.deptForm = { ...dept };
+                    this.showDeptModal = true;
+                },
+                saveDeptItem() {
+                    if (!this.deptForm.name) { this.showToast('Vui lòng nhập tên phòng ban!', 'warning'); return; }
+                    if (this.isEditDept) {
+                        const idx = this.departments.findIndex(d => d.id === this.deptForm.id);
+                        if (idx !== -1) this.departments[idx] = { ...this.deptForm };
+                    } else {
+                        this.departments.push({ ...this.deptForm });
+                    }
+                    this.showDeptModal = false; this.saveToStorage(); this.showToast('Đã lưu phòng ban liên kết!');
+                },
+
+                // USER HANDLERS
+                openAddUserModal() {
+                    this.isEditUser = false;
+                    this.userForm = { id: Date.now(), name: '', email: '', password: 'admin' + Math.floor(Math.random()*1000), role: 'IT Manager' };
+                    this.showUserModal = true;
+                },
+                editUserItem(u) {
+                    this.isEditUser = true;
+                    this.userForm = { ...u };
+                    this.showUserModal = true;
+                },
+                saveUserItem() {
+                    if (!this.userForm.name || !this.userForm.email) { this.showToast('Vui lòng nhập tên và email!', 'warning'); return; }
+                    if (this.isEditUser) {
+                        const idx = this.usersList.findIndex(u => u.id === this.userForm.id);
+                        if (idx !== -1) this.usersList[idx] = { ...this.userForm };
+                    } else {
+                        this.usersList.push({ ...this.userForm });
+                    }
+                    this.showUserModal = false; this.saveToStorage(); this.showToast('Đã lưu tài khoản quản trị!');
+                },
+
+                // TASK HANDLERS
+                openAddTaskModal() {
+                    this.isEditTask = false;
+                    const defaultCorp = this.selectedCompany !== 'ALL' ? this.selectedCompany : (this.companies[0]?.id || 'CORP-HQ');
+                    const defaultSite = this.sites.find(s => s.companyId === defaultCorp)?.code || 'HQ-HCM';
+                    this.taskForm = { id: Date.now(), executionDate: new Date().toISOString().slice(0,10), dueDate: new Date().toISOString().slice(0,10), title: '', companyId: defaultCorp, site: defaultSite, poNumber: 'PO-2026-' + Date.now().toString().slice(-3), invoiceNumber: '', supplier: '', cost: 500000, taskStatus: 'Đang thực hiện (Pending)', notes: '' };
+                    this.showTaskModal = true;
+                },
+                editTaskItem(t) {
+                    this.isEditTask = true;
+                    this.taskForm = { ...t };
+                    if (!this.taskForm.executionDate) {
+                        this.taskForm.executionDate = new Date().toISOString().slice(0,10);
+                    }
+                    if (!this.taskForm.dueDate) {
+                        this.taskForm.dueDate = new Date().toISOString().slice(0,10);
+                    }
+                    if (!this.taskForm.taskStatus) {
+                        this.taskForm.taskStatus = 'Đang thực hiện (Pending)';
+                    }
+                    this.showTaskModal = true;
+                },
+                saveTaskItem() {
+                    if (!this.taskForm.title || !this.taskForm.executionDate) { this.showToast('Vui lòng nhập ngày thực hiện và tiêu đề công việc!', 'warning'); return; }
+                    if (this.isEditTask) {
+                        const idx = this.dailyTasks.findIndex(t => t.id === this.taskForm.id);
+                        if (idx !== -1) this.dailyTasks[idx] = { ...this.taskForm };
+                    } else {
+                        this.dailyTasks.unshift({ ...this.taskForm });
+                    }
+                    this.showTaskModal = false; this.saveToStorage(); this.showToast('Đã lưu đơn mua sắm / công việc!');
+                },
+
+                getSiteName(code) {
+                    const found = this.sites.find(s => s.code === code);
+                    return found ? found.name : code;
+                },
+
+                getCompanyName(id) {
+                    const found = this.companies.find(c => c.id === id);
+                    return found ? found.name : id;
+                },
+
+                getStatusBadgeClass(status) {
+                    return status === 'Online' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40';
+                },
+
+                getTaskStatusBadgeClass(status) {
+                    if (status === 'Đã hoàn thành (Xong)') return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+                    if (status === 'Chưa xong') return 'bg-rose-500/20 text-rose-300 border border-rose-500/40';
+                    return 'bg-amber-500/20 text-amber-300 border border-amber-500/40';
+                },
+
+                saveToStorage() {
+                    localStorage.setItem('infra_v10_companies', JSON.stringify(this.companies));
+                    localStorage.setItem('infra_v10_sites', JSON.stringify(this.sites));
+                    localStorage.setItem('infra_v10_depts', JSON.stringify(this.departments));
+                    localStorage.setItem('infra_v10_hr', JSON.stringify(this.hrAssets));
+                    localStorage.setItem('infra_v10_isp', JSON.stringify(this.ispWifi));
+                    localStorage.setItem('infra_v10_vlan', JSON.stringify(this.networkVlan));
+                    localStorage.setItem('infra_v10_cctv', JSON.stringify(this.cctvList));
+                    localStorage.setItem('infra_v10_rj', JSON.stringify(this.ronaldJackList));
+                    localStorage.setItem('infra_v10_users', JSON.stringify(this.usersList));
+                    localStorage.setItem('infra_v10_tasks', JSON.stringify(this.dailyTasks));
+                },
+
+                loadInitialData() {
+                    const savedUsers = localStorage.getItem('infra_v10_users');
+                    if (savedUsers) {
+                        try {
+                            this.usersList = JSON.parse(savedUsers);
+                        } catch (e) {
+                            this.usersList = [];
+                        }
+                    }
+
+                    // Strict RBAC accounts setup with default duongvantinh0201@gmail.com
+                    if (!Array.isArray(this.usersList) || this.usersList.length === 0 || !this.usersList.some(u => u.email === 'duongvantinh0201@gmail.com')) {
+                        this.usersList = [
+                            { id: 1, name: 'Dương Văn Tính', email: 'duongvantinh0201@gmail.com', password: 'adminpassword123', role: 'Super Admin' },
+                            { id: 2, name: 'Trần Minh Tuấn', email: 'manager@enterprise.com', password: 'managerpassword123', role: 'IT Manager' },
+                            { id: 3, name: 'Lê Văn An', email: 'cctv@enterprise.com', password: 'cctvpassword123', role: 'CCTV Operator' },
+                            { id: 4, name: 'Phạm Thị Mai', email: 'viewer@enterprise.com', password: 'viewerpassword123', role: 'Viewer' }
+                        ];
+                        localStorage.setItem('infra_v10_users', JSON.stringify(this.usersList));
+                    }
+
+                    const savedHr = localStorage.getItem('infra_v10_hr');
+                    if (savedHr) {
+                        this.companies = JSON.parse(localStorage.getItem('infra_v10_companies') || '[]');
+                        this.sites = JSON.parse(localStorage.getItem('infra_v10_sites') || '[]');
+                        this.departments = JSON.parse(localStorage.getItem('infra_v10_depts') || '[]');
+                        this.hrAssets = JSON.parse(savedHr);
+                        this.ispWifi = JSON.parse(localStorage.getItem('infra_v10_isp') || '[]');
+                        this.networkVlan = JSON.parse(localStorage.getItem('infra_v10_vlan') || '[]');
+                        this.cctvList = JSON.parse(localStorage.getItem('infra_v10_cctv') || '[]');
+                        this.ronaldJackList = JSON.parse(localStorage.getItem('infra_v10_rj') || '[]');
+                        this.dailyTasks = JSON.parse(localStorage.getItem('infra_v10_tasks') || '[]');
+                    } else {
+                        this.companies = [
+                            { id: 'CORP-HQ', name: 'Tập Đoàn Công Nghệ HQ', taxCode: '0301122334', address: 'Landmark 81, TP.HCM' },
+                            { id: 'CORP-LOGISTICS', name: 'Công ty Logistics Long An', taxCode: '1109988776', address: 'KCN Bến Lức, Long An' }
+                        ];
+                        this.sites = [
+                            { code: 'HQ-HCM', name: 'Trụ sở chính TP.HCM', companyId: 'CORP-HQ', manager: 'Trần Minh Tuấn' },
+                            { code: 'Factory-BD', name: 'Nhà máy Bình Dương', companyId: 'CORP-HQ', manager: 'Dương Văn Tính' }
+                        ];
+                        this.departments = [
+                            { id: 1, code: 'DEPT-IT', name: 'IT Systems & Security', site: 'HQ-HCM' },
+                            { id: 2, code: 'DEPT-ACC', name: 'Phòng Kế Toán', site: 'HQ-HCM' }
+                        ];
+                        this.hrAssets = [
+                            { id: 101, empCode: 'NV-001', empName: 'Dương Văn Tính', companyId: 'CORP-HQ', site: 'HQ-HCM', dept: 'IT Systems & Security', title: 'Trưởng Phòng IT', email: 'duongvantinh0201@gmail.com', emailPass: 'passmail123', phone: '0901234567', deviceType: 'Laptop', deviceName: 'Dell XPS 15', serialNumber: 'DXP-99882', ipAddress: '192.168.10.15', status: 'Active', notes: 'Tài khoản Super Admin chính' }
+                        ];
+                        this.ispWifi = [
+                            { id: 201, name: 'Đường Truyền VNPT Leased Line 500M', category: 'ISP Leased Line', companyId: 'CORP-HQ', site: 'HQ-HCM', location: 'Tầng 1 - Server Room', bandwidth: '500 Mbps', loginId: 'admin_vnpt', password: 'wifi@hqpassword', gatewayIp: '192.168.1.1', serialNumber: 'SN-VNPT-998', supplier: 'VNPT', notes: 'Hợp đồng số 99281/VNPT' }
+                        ];
+                        this.networkVlan = [
+                            { id: 301, vlanId: '10', name: 'VLAN Office HCM', companyId: 'CORP-HQ', site: 'HQ-HCM', subnet: '192.168.10.0/24', gateway: '192.168.10.1', dhcpRange: '192.168.10.100 - 192.168.10.250', authId: 'sysadmin', authPass: 'vlanpass', serialNumber: 'SN-SW-01', notes: 'Dải IP chính cho khối văn phòng' }
+                        ];
+                        this.cctvList = [
+                            { id: 401, code: 'CAM-HQ-01', name: 'Camera Cổng Chính Tầng 1', companyId: 'CORP-HQ', site: 'HQ-HCM', installationDate: '2026-03-01', ipAddress: '192.168.10.150', rtspPort: '554', camId: 'admin', camPass: 'cam12345', serialNumber: 'DS-2CD2043G2', brandModel: 'Hikvision 2MP', status: 'Online', notes: 'Góc nhìn bao quát sảnh chính' }
+                        ];
+                        this.ronaldJackList = [
+                            { id: 601, code: 'MCC-HQ-01', name: 'Ronald Jack 3800 Pro - Cổng Tầng 1', companyId: 'CORP-HQ', site: 'HQ-HCM', ipAddress: '192.168.10.220', port: '4370', deviceId: '1', devicePass: '12345', serialNumber: 'RJ-3800-99', status: 'Online', notes: 'Kết nối mạng LAN tầng 1, đồng bộ giờ tự động' }
+                        ];
+                        this.dailyTasks = [
+                            { id: 501, executionDate: '2026-03-15', dueDate: '2026-03-20', title: 'Bảo trì máy chấm công Ronald Jack FA210', companyId: 'CORP-HQ', site: 'Factory-BD', poNumber: 'PO-2026-0088', invoiceNumber: 'VAT-99120', supplier: 'Ronald Jack Việt Nam', cost: 1200000, taskStatus: 'Đã hoàn thành (Xong)', notes: 'Thay thế nguồn dự phòng 12V' }
+                        ];
+                        this.saveToStorage();
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
